@@ -7,6 +7,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -39,13 +40,11 @@ export default function Home() {
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-6 py-12">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full opacity-40 blur-3xl"
-        style={{ background: "var(--gradient-primary)" }}
+        className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full opacity-40 blur-3xl gradient-primary"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 -left-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
-        style={{ background: "var(--gradient-primary)" }}
+        className="pointer-events-none absolute -bottom-32 -left-32 h-96 w-96 rounded-full opacity-30 blur-3xl gradient-primary"
       />
 
       <motion.div
@@ -54,10 +53,24 @@ export default function Home() {
         transition={{ duration: 0.4 }}
         className="mb-12 text-center"
       >
+        {/* Logo */}
+        <div className="mb-6 flex justify-center">
+          <div className="relative h-40 w-40 overflow-hiddenl p-2 ">
+            <Image
+              src="/images/logo.png"
+              alt="GM Food Point Logo"
+              fill
+              className="object-contain p-1"
+              priority
+            />
+          </div>
+        </div>
+
         <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-semibold tracking-wider text-secondary-foreground uppercase">
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          Welcome to Goldn
+          Welcome to GM Food Point
         </div>
+
         <h1 className="text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
           How would you like to order?
         </h1>
@@ -80,8 +93,7 @@ export default function Home() {
           >
             <div
               aria-hidden
-              className="absolute inset-x-0 top-0 h-1.5"
-              style={{ background: "var(--gradient-primary)" }}
+              className="absolute inset-x-0 top-0 h-1.5 gradient-primary"
             />
             <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[var(--shadow-yellow)]">
               <opt.Icon className="h-12 w-12" strokeWidth={2.2} />

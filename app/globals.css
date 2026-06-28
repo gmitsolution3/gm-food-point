@@ -170,7 +170,7 @@
   box-shadow: var(--shadow-yellow);
 }
 
-@utility bg-gradient-primary {
+@utility gradient-primary {
   background: linear-gradient(
     135deg,
     var(--primary),

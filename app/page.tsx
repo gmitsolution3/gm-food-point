@@ -55,7 +55,7 @@ export default function Home() {
       >
         {/* Logo */}
         <div className="mb-6 flex justify-center">
-          <div className="relative h-40 w-40 overflow-hiddenl p-2 ">
+          <div className="relative h-40 w-40 overflow-hidden">
             <Image
               src="/images/logo.png"
               alt="GM Food Point Logo"

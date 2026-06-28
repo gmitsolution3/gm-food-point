@@ -1,9 +1,3 @@
-import burger from "@/assets/food-burger.jpg";
-import pizza from "@/assets/food-pizza.jpg";
-import chicken from "@/assets/food-chicken.jpg";
-import rice from "@/assets/food-rice.jpg";
-import drink from "@/assets/food-drink.jpg";
-import dessert from "@/assets/food-dessert.jpg";
 import { IAddOn, IMenuItem, TCategory } from "@/types";
 
 export const CATEGORIES: Array<"All" | TCategory> = [
@@ -27,39 +21,43 @@ export const MENU: IMenuItem[] = [
   {
     id: "burger-classic",
     name: "Classic Cheeseburger",
-    description: "Juicy beef patty, melted cheddar, fresh lettuce and tomato.",
+    description:
+      "Juicy beef patty, melted cheddar, fresh lettuce and tomato.",
     category: "Burger",
     price: 8.99,
     discountPrice: 6.99,
-    image: burger,
+    image: "/images/food-burger.jpg",
     addons: defaultAddons,
   },
   {
     id: "burger-double",
     name: "Double Smash Burger",
-    description: "Two smashed patties with caramelized onions and house sauce.",
+    description:
+      "Two smashed patties with caramelized onions and house sauce.",
     category: "Burger",
     price: 11.5,
-    image: burger,
+    image: "/images/food-burger.jpg",
     addons: defaultAddons,
   },
   {
     id: "pizza-pepperoni",
     name: "Pepperoni Slice",
-    description: "Wood-fired slice loaded with pepperoni and mozzarella.",
+    description:
+      "Wood-fired slice loaded with pepperoni and mozzarella.",
     category: "Pizza",
     price: 5.5,
-    image: pizza,
+    image: "/images/food-pizza.jpg",
     addons: defaultAddons,
   },
   {
     id: "pizza-margherita",
     name: "Margherita Pie",
-    description: "San Marzano tomato, fresh basil and creamy mozzarella.",
+    description:
+      "San Marzano tomato, fresh basil and creamy mozzarella.",
     category: "Pizza",
     price: 12.0,
     discountPrice: 9.99,
-    image: pizza,
+    image: "/images/food-pizza.jpg",
     addons: defaultAddons,
   },
   {
@@ -68,7 +66,7 @@ export const MENU: IMenuItem[] = [
     description: "8 pieces of golden, hand-breaded fried chicken.",
     category: "Chicken",
     price: 14.99,
-    image: chicken,
+    image: "/images/food-chicken.jpg",
     addons: defaultAddons,
   },
   {
@@ -78,25 +76,27 @@ export const MENU: IMenuItem[] = [
     category: "Chicken",
     price: 7.5,
     discountPrice: 5.99,
-    image: chicken,
+    image: "/images/food-chicken.jpg",
     addons: defaultAddons,
   },
   {
     id: "rice-shrimp",
     name: "Shrimp Fried Rice",
-    description: "Wok-fired jasmine rice with shrimp and crisp vegetables.",
+    description:
+      "Wok-fired jasmine rice with shrimp and crisp vegetables.",
     category: "Rice",
     price: 9.5,
-    image: rice,
+    image: "/images/food-rice.jpg",
     addons: defaultAddons,
   },
   {
     id: "rice-veggie",
     name: "Garden Veggie Rice",
-    description: "Fragrant rice with seasonal vegetables and soy glaze.",
+    description:
+      "Fragrant rice with seasonal vegetables and soy glaze.",
     category: "Rice",
     price: 7.99,
-    image: rice,
+    image: "/images/food-rice.jpg",
     addons: defaultAddons,
   },
   {
@@ -105,7 +105,7 @@ export const MENU: IMenuItem[] = [
     description: "Classic cola served over crushed ice.",
     category: "Drinks",
     price: 2.5,
-    image: drink,
+    image: "/images/food-drink.jpg",
     addons: [],
   },
   {
@@ -115,7 +115,7 @@ export const MENU: IMenuItem[] = [
     category: "Drinks",
     price: 3.2,
     discountPrice: 2.5,
-    image: drink,
+    image: "/images/food-drink.jpg",
     addons: [],
   },
   {
@@ -124,17 +124,18 @@ export const MENU: IMenuItem[] = [
     description: "Warm molten chocolate cake with vanilla ice cream.",
     category: "Dessert",
     price: 6.5,
-    image: dessert,
+    image: "/images/food-dessert.jpg",
     addons: [],
   },
   {
     id: "dessert-brownie",
     name: "Fudge Brownie",
-    description: "Rich double-chocolate brownie with caramel drizzle.",
+    description:
+      "Rich double-chocolate brownie with caramel drizzle.",
     category: "Dessert",
     price: 4.99,
     discountPrice: 3.99,
-    image: dessert,
+    image: "/images/food-dessert.jpg",
     addons: [],
   },
 ];

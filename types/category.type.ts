@@ -1,0 +1,1 @@
+export type TCategory = "Pizza" | "Burger" | "Rice" | "Chicken" | "Drinks" | "Dessert";

@@ -4,6 +4,9 @@ import { IAddOn, IMenuItem } from "@/types";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   item: IMenuItem | null;
@@ -68,13 +71,14 @@ export default function FoodDetailModal({ item, onClose }: Props) {
             onClick={(e) => e.stopPropagation()}
             className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-card shadow-[var(--shadow-lift)] sm:rounded-3xl"
           >
-            <button
+            <Button
               onClick={onClose}
               aria-label="Close"
-              className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-card/90 text-foreground shadow-[var(--shadow-soft)] backdrop-blur transition-transform hover:scale-105"
+              variant="ghost"
+              className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-card/90 text-foreground shadow-[var(--shadow-soft)] backdrop-blur p-0 transition-transform hover:scale-105"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
 
             <div className="overflow-y-auto">
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
@@ -89,9 +93,12 @@ export default function FoodDetailModal({ item, onClose }: Props) {
 
               <div className="space-y-6 p-6 sm:p-8">
                 <div>
-                  <span className="rounded-full bg-secondary px-3 py-1 text-[10px] font-bold tracking-wider text-secondary-foreground uppercase">
+                  <Badge 
+                    variant="secondary" 
+                    className="rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase"
+                  >
                     {item.category}
-                  </span>
+                  </Badge>
                   <h2 className="mt-3 text-3xl font-extrabold text-foreground">
                     {item.name}
                   </h2>
@@ -136,16 +143,15 @@ export default function FoodDetailModal({ item, onClose }: Props) {
                             }}
                           >
                             <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 checked={on}
-                                onChange={() =>
+                                onCheckedChange={() =>
                                   setSelected((s) => ({
                                     ...s,
                                     [a.id]: !on,
                                   }))
                                 }
-                                className="h-5 w-5 accent-primary"
+                                className="h-5 w-5"
                               />
                               <span className="text-sm font-semibold text-foreground">
                                 {a.name}

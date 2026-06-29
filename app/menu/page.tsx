@@ -12,6 +12,9 @@ import { ArrowLeft, Search, ShoppingBag, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 export default function MenuPage() {
   const [category, setCategory] = useState<string>("All");
@@ -46,11 +49,14 @@ export default function MenuPage() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div>
-              <div className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
+              <Badge 
+                variant="outline" 
+                className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground border-0 px-0"
+              >
                 {orderType === "take-out"
                   ? "Take Out Order"
                   : "Dine In Order"}
-              </div>
+              </Badge>
               <h1 className="text-xl font-extrabold leading-tight">
                 GM Food Point Menu
               </h1>
@@ -58,9 +64,10 @@ export default function MenuPage() {
           </div>
 
           {/* Mobile cart trigger */}
-          <button
+          <Button
             onClick={() => setCartOpen(true)}
-            className="relative flex items-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground lg:hidden"
+            variant="secondary"
+            className="relative flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold lg:hidden"
           >
             <ShoppingBag className="h-4 w-4" />${total.toFixed(2)}
             {totalItems > 0 && (
@@ -68,7 +75,7 @@ export default function MenuPage() {
                 {totalItems}
               </span>
             )}
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -83,11 +90,11 @@ export default function MenuPage() {
           {/* Search */}
           <div className="relative mb-5">
             <Search className="pointer-events-none absolute top-1/2 left-5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search food..."
-              className="w-full rounded-full border border-border bg-card py-3.5 pr-5 pl-12 text-sm font-medium shadow-[var(--shadow-soft)] outline-none transition-shadow focus:shadow-[var(--shadow-lift)] focus:ring-2 focus:ring-primary/40"
+              className="w-full rounded-full border-border bg-card py-6 pr-5 pl-12 text-sm font-medium shadow-[var(--shadow-soft)] outline-none transition-shadow focus:shadow-[var(--shadow-lift)] focus:ring-2 focus:ring-primary/40"
             />
           </div>
 
@@ -190,13 +197,14 @@ export default function MenuPage() {
               }}
               className="absolute inset-x-0 bottom-0 h-[88vh] overflow-hidden rounded-t-3xl bg-card"
             >
-              <button
+              <Button
                 onClick={() => setCartOpen(false)}
                 aria-label="Close cart"
-                className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-muted"
+                variant="ghost"
+                className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-muted p-0"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
               <CartPanel embedded />
             </motion.div>
           </motion.div>

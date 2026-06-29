@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/store/cart-store";
 import {
   ArrowRight,
@@ -32,9 +34,12 @@ export default function CartPanel({
     >
       <div className="flex items-center justify-between border-b p-5">
         <div>
-          <div className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="text-xs font-bold tracking-wider uppercase text-muted-foreground border-0 px-0"
+          >
             {orderType === "take-out" ? "Take Out" : "Dine In"}
-          </div>
+          </Badge>
           <h2 className="text-xl font-extrabold">Your Order</h2>
         </div>
         <div className="grid h-11 w-11 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-yellow)]">
@@ -93,13 +98,15 @@ export default function CartPanel({
                             </div>
                           )}
                         </div>
-                        <button
+                        <Button
                           onClick={() => removeItem(ci.lineId)}
-                          className="shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 rounded-full p-1.5 h-auto w-auto text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
                           aria-label="Remove"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 rounded-full bg-card p-1 shadow-[var(--shadow-soft)]">
@@ -131,7 +138,7 @@ export default function CartPanel({
                                 ci.quantity + 1,
                               )
                             }
-                            className="grid h-7 w-7 place-items-center rounded-full bg-primary text-primary-foreground"
+                            className="grid h-7 w-7 place-items-center rounded-full bg-primary text-white!"
                           >
                             <Plus className="h-3 w-3" />
                           </motion.button>

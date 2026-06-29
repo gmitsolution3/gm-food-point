@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { IMenuItem } from "@/types";
 import { motion } from "motion/react";
 
@@ -26,19 +27,26 @@ export default function FoodCard({ item, onView }: IProps) {
           whileHover={{ scale: 1.06 }}
           transition={{ duration: 0.3 }}
         />
-        <span className="absolute top-3 left-3 rounded-full bg-secondary px-3 py-1 text-[10px] font-bold tracking-wider text-secondary-foreground uppercase">
+        <Badge
+          variant="secondary"
+          className="absolute top-3 left-3 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase"
+        >
           {item.category}
-        </span>
+        </Badge>
         {hasDiscount && (
-          <span className="absolute top-3 right-3 rounded-full bg-primary px-3 py-1 text-[10px] font-bold tracking-wider text-primary-foreground uppercase">
+          <Badge className="absolute top-3 right-3 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase">
             Save
-          </span>
+          </Badge>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
-          <h3 className="text-base font-extrabold text-foreground">{item.name}</h3>
-          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
+          <h3 className="text-base font-extrabold text-foreground">
+            {item.name}
+          </h3>
+          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+            {item.description}
+          </p>
         </div>
         <div className="mt-auto flex items-end justify-between gap-2">
           <div className="flex items-baseline gap-2">
@@ -52,7 +60,9 @@ export default function FoodCard({ item, onView }: IProps) {
                 </span>
               </>
             ) : (
-              <span className="text-lg font-extrabold text-foreground">${item.price.toFixed(2)}</span>
+              <span className="text-lg font-extrabold text-foreground">
+                ${item.price.toFixed(2)}
+              </span>
             )}
           </div>
           <motion.button

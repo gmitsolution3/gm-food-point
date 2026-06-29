@@ -1,9 +1,9 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 
-type Fulfillment = "dine-in" | "pickup" | "delivery";
+type Fulfillment = "dine-in" | "take-out";
 
 export default function Confirmation({
   orderId,
@@ -17,7 +17,7 @@ export default function Confirmation({
   const message =
     fulfillment === "dine-in"
       ? "We'll bring your order to your table shortly."
-      : fulfillment === "pickup"
+      : fulfillment === "take-out"
         ? "We'll have it ready at the counter soon."
         : "Our courier will be on the way shortly.";
   return (
@@ -57,7 +57,9 @@ export default function Confirmation({
 
             <div className="mt-6 rounded-2xl bg-muted/60 p-4 text-left">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Order ID</span>
+                <span className="text-muted-foreground">
+                  Order ID
+                </span>
                 <span className="font-extrabold tracking-wider">
                   {orderId}
                 </span>

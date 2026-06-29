@@ -22,12 +22,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Smartphone,
-  Truck,
-  UserIcon,
   UtensilsCrossed,
-  Phone,
-  Clock,
-  MapPin
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -36,63 +31,19 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
-type Fulfillment = "dine-in" | "pickup" | "delivery";
+type Fulfillment = "dine-in" | "take-out";
 type Payment = "cash" | "card" | "mobile";
 
 // Zod schema for validation
-const checkoutSchema = z
-  .object({
-    name: z
-      .string()
-      .min(1, "Name is required")
-      .max(80, "Name is too long (max 80 characters)"),
-    phone: z.string().optional(),
-    fulfillment: z.enum(["dine-in", "pickup", "delivery"]),
-    table: z.string().optional(),
-    pickupTime: z.string().default("asap"),
-    address: z.string().optional(),
-    notes: z
-      .string()
-      .max(240, "Notes cannot exceed 240 characters")
-      .default(""),
-    payment: z.enum(["cash", "card", "mobile"]),
-  })
-  .superRefine((data, ctx) => {
-    // Conditional validation
-    if (data.fulfillment !== "dine-in") {
-      if (
-        !data.phone ||
-        !/^[+()\-\s\d]{7,20}$/.test(data.phone.trim())
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Enter a valid phone number",
-          path: ["phone"],
-        });
-      }
-    }
-
-    if (data.fulfillment === "dine-in") {
-      if (!data.table || data.table.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Table number is required",
-          path: ["table"],
-        });
-      }
-    }
-
-    if (data.fulfillment === "delivery") {
-      if (!data.address || data.address.trim().length < 8) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "Please enter a full address (minimum 8 characters)",
-          path: ["address"],
-        });
-      }
-    }
-  });
+const checkoutSchema = z.object({
+  table: z.string().min(1, "Table number is required"),
+  notes: z
+    .string()
+    .max(240, "Notes cannot exceed 240 characters")
+    .default(""),
+  payment: z.enum(["cash", "card", "mobile"]),
+  fulfillment: z.enum(["dine-in", "take-out"]),
+});
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
@@ -102,7 +53,7 @@ export default function CheckoutPage() {
     useCart();
 
   const defaultFulfillment: Fulfillment =
-    orderType === "dine-in" ? "dine-in" : "pickup";
+    orderType === "dine-in" ? "dine-in" : "take-out";
 
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<null | { orderId: string }>(null);
@@ -111,34 +62,21 @@ export default function CheckoutPage() {
     control,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors },
-  } = useForm<
-    z.input<typeof checkoutSchema>,
-    any,
-    z.output<typeof checkoutSchema>
-  >({
+  } = useForm<z.input<typeof checkoutSchema>, any, z.output<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      name: "",
-      phone: "",
-      fulfillment: defaultFulfillment,
-      table: "",
-      pickupTime: "asap",
-      address: "",
+      table: "15",
       notes: "",
       payment: "card",
+      fulfillment: defaultFulfillment,
     },
   });
 
   const formValues = watch();
   const currentFulfillment = watch("fulfillment");
-  const currentPayment = watch("payment");
 
-  const deliveryFee = 3.5; // Fixed for now, could be dynamic
-  const grandTotal =
-    total +
-    (formValues?.fulfillment === "delivery" ? deliveryFee : 0);
+  const grandTotal = total;
 
   const onSubmit = async (data: CheckoutFormData) => {
     setSubmitting(true);
@@ -148,6 +86,8 @@ export default function CheckoutPage() {
     setSubmitting(false);
     setDone({ orderId });
     clear();
+
+    console.log(data)
   };
 
   if (items.length === 0 && !done) {
@@ -200,9 +140,9 @@ export default function CheckoutPage() {
             {/* Fulfillment */}
             <CheckoutCard
               title="Order type"
-              subtitle="How should we hand off your order?"
+              subtitle="How would you like to enjoy your meal?"
             >
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Controller
                   name="fulfillment"
                   control={control}
@@ -213,21 +153,14 @@ export default function CheckoutPage() {
                         onClick={() => field.onChange("dine-in")}
                         Icon={UtensilsCrossed}
                         title="Dine In"
-                        desc="Eat at our restaurant"
+                        desc="Enjoy at our restaurant"
                       />
                       <FulFillmentOption
-                        active={field.value === "pickup"}
-                        onClick={() => field.onChange("pickup")}
+                        active={field.value === "take-out"}
+                        onClick={() => field.onChange("take-out")}
                         Icon={ShoppingBag}
-                        title="Pickup"
-                        desc="Grab it at the counter"
-                      />
-                      <FulFillmentOption
-                        active={field.value === "delivery"}
-                        onClick={() => field.onChange("delivery")}
-                        Icon={Truck}
-                        title="Delivery"
-                        desc="Bring it to me · $3.50"
+                        title="Take Out"
+                        desc="Grab your order to go"
                       />
                     </>
                   )}
@@ -235,140 +168,28 @@ export default function CheckoutPage() {
               </div>
             </CheckoutCard>
 
-            {/* Contact Details */}
-            <CheckoutCard title="Your details">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <CheckoutField
-                      label="Full name"
-                      Icon={UserIcon}
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Jane Doe"
-                      error={errors.name?.message}
-                      maxLength={80}
-                    />
-                  )}
-                />
-                {currentFulfillment !== "dine-in" && (
-                  <Controller
-                    name="phone"
-                    control={control}
-                    render={({ field }) => (
-                      <CheckoutField
-                        label="Phone"
-                        Icon={Phone}
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        placeholder="+1 555 123 4567"
-                        error={errors.phone?.message}
-                        maxLength={20}
-                        inputMode="tel"
-                      />
-                    )}
+            {/* Table Number */}
+            <CheckoutCard title="Table number">
+              <Controller
+                name="table"
+                control={control}
+                render={({ field }) => (
+                  <CheckoutField
+                    label="Table number"
+                    Icon={Hash}
+                    value={field.value}
+                    onChange={(v) =>
+                      field.onChange(
+                        v.replace(/[^0-9A-Za-z]/g, "").slice(0, 6)
+                      )
+                    }
+                    placeholder="e.g. 12"
+                    error={errors.table?.message}
+                    maxLength={6}
                   />
                 )}
-              </div>
+              />
             </CheckoutCard>
-
-            {/* Conditional fulfillment details */}
-            <motion.div
-              key={currentFulfillment}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              {currentFulfillment === "dine-in" && (
-                <CheckoutCard title="Table">
-                  <Controller
-                    name="table"
-                    control={control}
-                    render={({ field }) => (
-                      <CheckoutField
-                        label="Table number"
-                        Icon={Hash}
-                        value={field.value || ""}
-                        onChange={(v) =>
-                          field.onChange(
-                            v
-                              .replace(/[^0-9A-Za-z]/g, "")
-                              .slice(0, 6),
-                          )
-                        }
-                        placeholder="e.g. 12"
-                        error={errors.table?.message}
-                        maxLength={6}
-                      />
-                    )}
-                  />
-                </CheckoutCard>
-              )}
-
-              {currentFulfillment === "pickup" && (
-                <CheckoutCard title="Pickup time">
-                  <div className="grid gap-2 sm:grid-cols-4">
-                    {[
-                      { v: "asap", l: "ASAP · 15 min" },
-                      { v: "30", l: "In 30 min" },
-                      { v: "60", l: "In 1 hour" },
-                      { v: "120", l: "In 2 hours" },
-                    ].map((opt) => {
-                      const isActive =
-                        formValues.pickupTime === opt.v;
-                      return (
-                        <motion.button
-                          key={opt.v}
-                          type="button"
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() =>
-                            setValue("pickupTime", opt.v)
-                          }
-                          className="flex items-center justify-center gap-2 rounded-2xl border-2 px-3 py-3 text-sm font-bold transition-colors"
-                          style={{
-                            borderColor: isActive
-                              ? "var(--primary)"
-                              : "var(--border)",
-                            background: isActive
-                              ? "var(--primary)"
-                              : "var(--card)",
-                            color: isActive
-                              ? "var(--primary-foreground)"
-                              : "var(--foreground)",
-                          }}
-                        >
-                          <Clock className="h-4 w-4" />
-                          {opt.l}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </CheckoutCard>
-              )}
-
-              {currentFulfillment === "delivery" && (
-                <CheckoutCard title="Delivery address">
-                  <Controller
-                    name="address"
-                    control={control}
-                    render={({ field }) => (
-                      <CheckoutField
-                        label="Street address"
-                        Icon={MapPin}
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        placeholder="123 Sunset Blvd, Apt 4B, Springfield"
-                        error={errors.address?.message}
-                        maxLength={160}
-                      />
-                    )}
-                  />
-                </CheckoutCard>
-              )}
-            </motion.div>
 
             {/* Payment */}
             <CheckoutCard
@@ -423,7 +244,7 @@ export default function CheckoutPage() {
                       onChange={(e) =>
                         field.onChange(e.target.value.slice(0, 240))
                       }
-                      placeholder="No onions, ring the doorbell twice..."
+                      placeholder="No onions, extra napkins, special requests..."
                       rows={5}
                       className="w-full resize-none rounded-2xl border-border bg-card p-4 text-sm outline-none transition-shadow focus:shadow-[var(--shadow-soft)] focus:ring-2 focus:ring-primary/40 h-[150px]"
                     />
@@ -493,9 +314,6 @@ export default function CheckoutPage() {
                   />
                 )}
                 <SummaryRow label="Tax (8%)" value={tax} />
-                {currentFulfillment === "delivery" && (
-                  <SummaryRow label="Delivery" value={deliveryFee} />
-                )}
                 <div className="my-3 h-px bg-border" />
                 <div className="flex items-end justify-between">
                   <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">

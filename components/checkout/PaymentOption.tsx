@@ -24,6 +24,7 @@ export default function PaymentOption({
         borderColor: active ? "var(--primary)" : "var(--border)",
         background: active ? "var(--accent)" : "var(--card)",
       }}
+      type="button"
     >
       <div
         className="grid h-10 w-10 place-items-center rounded-xl"

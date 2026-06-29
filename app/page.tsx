@@ -9,6 +9,7 @@ import {
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const { setOrderType } = useCart();
@@ -66,10 +67,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-semibold tracking-wider text-secondary-foreground uppercase">
+        <Badge 
+          variant="secondary" 
+          className="mb-4 inline-flex items-center gap-2 rounded-full p-4 text-xs font-semibold tracking-wider uppercase"
+        >
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
           Welcome to GM Food Point
-        </div>
+        </Badge>
 
         <h1 className="text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
           How would you like to order?

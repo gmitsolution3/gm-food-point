@@ -1,4 +1,5 @@
 import { ComponentType } from "react";
+import { Input } from "@/components/ui/input";
 
 export default function CheckoutField({
   label,
@@ -26,13 +27,13 @@ export default function CheckoutField({
       </span>
       <div className="relative">
         <Icon className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           maxLength={maxLength}
           inputMode={inputMode}
-          className="w-full rounded-2xl border bg-card py-3 pr-4 pl-11 text-sm font-medium outline-none transition-shadow focus:shadow-[var(--shadow-soft)] focus:ring-2 focus:ring-primary/40"
+          className="w-full rounded-2xl border bg-card py-6 pr-4 pl-11 text-sm font-medium outline-none transition-shadow focus:shadow-[var(--shadow-soft)] focus:ring-2 focus:ring-primary/40"
           style={{
             borderColor: error
               ? "var(--destructive)"

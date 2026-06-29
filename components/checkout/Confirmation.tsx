@@ -1,6 +1,7 @@
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Fulfillment = "dine-in" | "pickup" | "delivery";
 
@@ -32,59 +33,61 @@ export default function Confirmation({
           className="h-2"
           style={{ background: "var(--gradient-primary)" }}
         />
-        <div className="p-8">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 18,
-              delay: 0.1,
-            }}
-            className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-yellow)]"
-          >
-            <ShieldCheck className="h-10 w-10" />
-          </motion.div>
-          <h1 className="mt-6 text-3xl font-extrabold">
-            Order placed!
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {message}
-          </p>
-
-          <div className="mt-6 rounded-2xl bg-muted/60 p-4 text-left">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Order ID</span>
-              <span className="font-extrabold tracking-wider">
-                {orderId}
-              </span>
-            </div>
-            <div className="mt-2 flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                Total paid
-              </span>
-              <span className="font-extrabold">
-                ${total.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-2">
-            <Link
-              href="/menu"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)]"
+        <Card className="border-0 shadow-none bg-transparent">
+          <CardContent className="p-8">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 18,
+                delay: 0.1,
+              }}
+              className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-yellow)]"
             >
-              Order Again <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-secondary bg-card px-6 py-3.5 text-sm font-extrabold text-foreground"
-            >
-              Back to Home
-            </Link>
-          </div>
-        </div>
+              <ShieldCheck className="h-10 w-10" />
+            </motion.div>
+            <h1 className="mt-6 text-3xl font-extrabold">
+              Order placed!
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {message}
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-muted/60 p-4 text-left">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Order ID</span>
+                <span className="font-extrabold tracking-wider">
+                  {orderId}
+                </span>
+              </div>
+              <div className="mt-2 flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Total paid
+                </span>
+                <span className="font-extrabold">
+                  ${total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2">
+              <Link
+                href="/menu"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)]"
+              >
+                Order Again <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-secondary bg-card px-6 py-3.5 text-sm font-extrabold text-foreground"
+              >
+                Back to Home
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </main>
   );

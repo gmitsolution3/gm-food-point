@@ -5,27 +5,26 @@ import CheckoutCard from "@/components/checkout/CheckoutCard";
 import CheckoutField from "@/components/checkout/CheckoutField";
 import Confirmation from "@/components/checkout/Confirmation";
 import FulFillmentOption from "@/components/checkout/FulFillmentOption";
-import { PaymentOption } from "@/components/checkout/PaymentOption";
+import PaymentOption from "@/components/checkout/PaymentOption";
 import SummaryRow from "@/components/checkout/SummeryRow";
+
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/store/cart-store";
 import {
   ArrowLeft,
   ArrowRight,
   Banknote,
-  Clock,
   CreditCard,
   Hash,
   Loader2,
-  MapPin,
-  Phone,
   ShieldCheck,
   ShoppingBag,
   Smartphone,
   Truck,
-  User,
   UtensilsCrossed,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -136,9 +135,12 @@ export default function CheckoutPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <div className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
+            <Badge
+              variant="outline"
+              className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground border-0 px-0"
+            >
               Step 2 of 2
-            </div>
+            </Badge>
             <h1 className="text-xl font-extrabold leading-tight">
               Checkout
             </h1>
@@ -183,113 +185,31 @@ export default function CheckoutPage() {
             </div>
           </CheckoutCard>
 
-          {/* Contact */}
-          <CheckoutCard title="Your details">
-            <div className="grid gap-4 sm:grid-cols-2">
+          {/* Table details */}
+
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <CheckoutCard title="Table" subtitle="Your table number">
               <CheckoutField
-                label="Full name"
-                Icon={User}
-                value={form.name}
-                onChange={(v) => update("name", v)}
-                placeholder="Jane Doe"
-                error={errors.name}
-                maxLength={80}
+                label="Table number"
+                Icon={Hash}
+                value={form.table}
+                onChange={(v) =>
+                  update(
+                    "table",
+                    v.replace(/[^0-9A-Za-z]/g, "").slice(0, 6),
+                  )
+                }
+                placeholder="e.g. 12"
+                error={errors.table}
+                maxLength={6}
               />
-              {form.fulfillment !== "dine-in" && (
-                <CheckoutField
-                  label="Phone"
-                  Icon={Phone}
-                  value={form.phone}
-                  onChange={(v) => update("phone", v)}
-                  placeholder="+1 555 123 4567"
-                  error={errors.phone}
-                  maxLength={20}
-                  inputMode="tel"
-                />
-              )}
-            </div>
-          </CheckoutCard>
-
-          {/* Conditional fulfillment details */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={form.fulfillment}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              {form.fulfillment === "dine-in" && (
-                <CheckoutCard title="Table">
-                  <CheckoutField
-                    label="Table number"
-                    Icon={Hash}
-                    value={form.table}
-                    onChange={(v) =>
-                      update(
-                        "table",
-                        v.replace(/[^0-9A-Za-z]/g, "").slice(0, 6),
-                      )
-                    }
-                    placeholder="e.g. 12"
-                    error={errors.table}
-                    maxLength={6}
-                  />
-                </CheckoutCard>
-              )}
-
-              {form.fulfillment === "pickup" && (
-                <CheckoutCard title="Pickup time">
-                  <div className="grid gap-2 sm:grid-cols-4">
-                    {[
-                      { v: "asap", l: "ASAP · 15 min" },
-                      { v: "30", l: "In 30 min" },
-                      { v: "60", l: "In 1 hour" },
-                      { v: "120", l: "In 2 hours" },
-                    ].map((opt) => {
-                      const on = form.pickupTime === opt.v;
-                      return (
-                        <motion.button
-                          key={opt.v}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => update("pickupTime", opt.v)}
-                          className="flex items-center justify-center gap-2 rounded-2xl border-2 px-3 py-3 text-sm font-bold transition-colors"
-                          style={{
-                            borderColor: on
-                              ? "var(--primary)"
-                              : "var(--border)",
-                            background: on
-                              ? "var(--primary)"
-                              : "var(--card)",
-                            color: on
-                              ? "var(--primary-foreground)"
-                              : "var(--foreground)",
-                          }}
-                        >
-                          <Clock className="h-4 w-4" />
-                          {opt.l}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </CheckoutCard>
-              )}
-
-              {form.fulfillment === "delivery" && (
-                <CheckoutCard title="Delivery address">
-                  <CheckoutField
-                    label="Street address"
-                    Icon={MapPin}
-                    value={form.address}
-                    onChange={(v) => update("address", v)}
-                    placeholder="123 Sunset Blvd, Apt 4B, Springfield"
-                    error={errors.address}
-                    maxLength={160}
-                  />
-                </CheckoutCard>
-              )}
-            </motion.div>
-          </AnimatePresence>
+            </CheckoutCard>
+          </motion.div>
 
           {/* Payment */}
           <CheckoutCard
@@ -326,14 +246,14 @@ export default function CheckoutPage() {
             title="Notes"
             subtitle="Optional — allergies, instructions, etc."
           >
-            <textarea
+            <Textarea
               value={form.notes}
               onChange={(e) =>
                 update("notes", e.target.value.slice(0, 240))
               }
               placeholder="No onions, ring the doorbell twice..."
-              rows={3}
-              className="w-full resize-none rounded-2xl border border-border bg-card p-4 text-sm outline-none transition-shadow focus:shadow-[var(--shadow-soft)] focus:ring-2 focus:ring-primary/40"
+              rows={5}
+              className="w-full resize-none rounded-2xl border-border bg-card p-4 text-sm outline-none transition-shadow focus:shadow-[var(--shadow-soft)] focus:ring-2 focus:ring-primary/40 h-[150px]"
             />
             <div className="mt-1 flex justify-between text-xs text-muted-foreground">
               <span>{errors.notes ?? ""}</span>

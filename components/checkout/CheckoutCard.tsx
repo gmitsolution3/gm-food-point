@@ -1,3 +1,10 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import React from "react";
 
 export default function CheckoutCard({
@@ -10,14 +17,20 @@ export default function CheckoutCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl bg-card p-5 shadow-[var(--shadow-soft)] sm:p-6">
-      <header className="mb-4">
-        <h2 className="text-base font-extrabold">{title}</h2>
+    <Card className="rounded-3xl bg-card shadow-[var(--shadow-soft)] p-0 sm:p-0">
+      <CardHeader className="p-5 sm:p-6">
+        <CardTitle className="text-base font-extrabold">
+          {title}
+        </CardTitle>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <CardDescription className="text-xs text-muted-foreground">
+            {subtitle}
+          </CardDescription>
         )}
-      </header>
-      {children}
-    </section>
+      </CardHeader>
+      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
+        {children}
+      </CardContent>
+    </Card>
   );
 }

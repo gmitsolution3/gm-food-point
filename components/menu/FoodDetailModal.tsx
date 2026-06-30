@@ -4,14 +4,15 @@ import { useCart } from "@/store/cart-store";
 import { IMenuItem } from "@/types";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 interface Props {
   item: IMenuItem | null;
+  setSelected: Dispatch<SetStateAction<IMenuItem | null>>;
   onClose: () => void;
 }
 
-export default function FoodDetailModal({ item, onClose }: Props) {
+export default function FoodDetailModal({ item, setSelected, onClose }: Props) {
   const { addItem } = useCart();
   const [qty, setQty] = useState(1);
 
@@ -32,8 +33,7 @@ export default function FoodDetailModal({ item, onClose }: Props) {
   };
 
   const isAvailable = item?.isAvailable ?? true;
-  const categoryName =
-    item?.categoryId?.name || "Uncategorized";
+  const categoryName = item?.categoryId?.name || "Uncategorized";
   const imageUrl = item?.image || "/placeholder-image.jpg";
 
   return (
@@ -133,6 +133,7 @@ export default function FoodDetailModal({ item, onClose }: Props) {
                           key={s._id}
                           whileHover={{ y: -4 }}
                           className="w-36 shrink-0 overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-soft)]"
+                          onClick={() => setSelected(s)}
                         >
                           <img
                             src={s.image || "/placeholder-image.jpg"}

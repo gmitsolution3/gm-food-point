@@ -242,6 +242,7 @@ export default function MenuPage() {
 
       <FoodDetailModal
         item={selected}
+        setSelected={setSelected}
         onClose={() => setSelected(null)}
       />
     </div>

@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  IAddOn,
-  ICartContextValue,
-  ICartItem,
-  IMenuItem,
-} from "@/types";
+import { ICartContextValue, ICartItem, IMenuItem } from "@/types";
 import {
   createContext,
   useContext,
@@ -16,17 +11,13 @@ import {
 
 const CartContext = createContext<ICartContextValue | null>(null);
 
-function lineKey(item: IMenuItem, addons: IAddOn[]) {
-  return `${item.id}::${addons
-    .map((a) => a.id)
-    .sort()
-    .join(",")}`;
+function lineKey(item: IMenuItem) {
+  return item._id;
 }
 
 function linePrice(ci: ICartItem) {
   const base = ci.item.discountPrice ?? ci.item.price;
-  const addons = ci.addons.reduce((s, a) => s + a.price, 0);
-  return (base + addons) * ci.quantity;
+  return base * ci.quantity;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -35,12 +26,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     "dine-in" | "take-out" | null
   >(null);
 
-  const addItem = (
-    item: IMenuItem,
-    quantity: number,
-    addons: IAddOn[],
-  ) => {
-    const key = lineKey(item, addons);
+  const addItem = (item: IMenuItem, quantity: number) => {
+    const key = lineKey(item);
     setItems((prev) => {
       const existing = prev.find((p) => p.lineId === key);
       if (existing) {
@@ -50,7 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : p,
         );
       }
-      return [...prev, { lineId: key, item, quantity, addons }];
+      return [...prev, { lineId: key, item, quantity }];
     });
   };
 
@@ -69,12 +56,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clear = () => setItems([]);
 
   const value = useMemo<ICartContextValue>(() => {
+    const effective = items.reduce((s, ci) => s + linePrice(ci), 0);
     const subtotalRaw = items.reduce((s, ci) => {
       const base = ci.item.price;
-      const addons = ci.addons.reduce((a, x) => a + x.price, 0);
-      return s + (base + addons) * ci.quantity;
+      return s + base * ci.quantity;
     }, 0);
-    const effective = items.reduce((s, ci) => s + linePrice(ci), 0);
     const discount = subtotalRaw - effective;
     const tax = effective * 0.08;
     const total = effective + tax;

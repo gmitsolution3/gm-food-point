@@ -62,9 +62,7 @@ export default function CartPanel({
           <ul className="flex flex-col gap-3">
             <AnimatePresence initial={false}>
               {items.map((ci) => {
-                const unit =
-                  (ci.item.discountPrice ?? ci.item.price) +
-                  ci.addons.reduce((s, a) => s + a.price, 0);
+                const unit = ci.item.discountPrice ?? ci.item.price;
                 return (
                   <motion.li
                     key={ci.lineId}
@@ -80,7 +78,7 @@ export default function CartPanel({
                     className="flex gap-3 rounded-2xl bg-muted/60 p-3"
                   >
                     <img
-                      src={ci.item.image as string}
+                      src={ci.item.image || "/placeholder-image.jpg"}
                       alt={ci.item.name}
                       className="h-16 w-16 shrink-0 rounded-xl object-cover"
                     />
@@ -90,13 +88,10 @@ export default function CartPanel({
                           <div className="truncate text-sm font-bold">
                             {ci.item.name}
                           </div>
-                          {ci.addons.length > 0 && (
-                            <div className="truncate text-[11px] text-muted-foreground">
-                              {ci.addons
-                                .map((a) => a.name)
-                                .join(", ")}
-                            </div>
-                          )}
+                          <div className="truncate text-[11px] text-muted-foreground">
+                            {ci.item.categoryId?.name ||
+                              "Uncategorized"}
+                          </div>
                         </div>
                         <Button
                           onClick={() => removeItem(ci.lineId)}
@@ -138,7 +133,7 @@ export default function CartPanel({
                                 ci.quantity + 1,
                               )
                             }
-                            className="grid h-7 w-7 place-items-center rounded-full bg-primary text-white!"
+                            className="grid h-7 w-7 place-items-center rounded-full bg-primary text-white"
                           >
                             <Plus className="h-3 w-3" />
                           </motion.button>

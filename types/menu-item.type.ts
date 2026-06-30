@@ -1,6 +1,4 @@
 import { ICategory } from "./category.type";
-
-
 export interface IMenuItem {
   _id: string;
   name: string;
@@ -11,7 +9,7 @@ export interface IMenuItem {
   price: number;
   discountPrice: number | null;
   preparationTime: number;
-  suggestedItems: string[];
+  suggestedItems: IMenuItem[];
   displayOrder: number;
   isAvailable: boolean;
   isFeatured: boolean;

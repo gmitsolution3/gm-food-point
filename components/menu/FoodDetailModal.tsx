@@ -1,12 +1,10 @@
-import { MENU } from "@/lib/menu-data";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/store/cart-store";
-import { IAddOn, IMenuItem } from "@/types";
+import { IMenuItem } from "@/types";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useState } from "react";
 
 interface Props {
   item: IMenuItem | null;
@@ -16,38 +14,27 @@ interface Props {
 export default function FoodDetailModal({ item, onClose }: Props) {
   const { addItem } = useCart();
   const [qty, setQty] = useState(1);
-  const [selected, setSelected] = useState<Record<string, boolean>>(
-    {},
-  );
 
   useEffect(() => {
     if (item) {
       setQty(1);
-      setSelected({});
     }
   }, [item]);
 
-  const suggested = useMemo(
-    () =>
-      item ? MENU.filter((m) => m.id !== item.id).slice(0, 6) : [],
-    [item],
-  );
+  const suggested = item?.suggestedItems || [];
 
-  const selectedAddons: IAddOn[] = useMemo(() => {
-    if (!item) return [];
-    return item.addons.filter((a) => selected[a.id]);
-  }, [item, selected]);
-
-  const unit = item
-    ? (item.discountPrice ?? item.price) +
-      selectedAddons.reduce((s, a) => s + a.price, 0)
-    : 0;
+  const unit = item ? (item.discountPrice ?? item.price) : 0;
 
   const handleAdd = () => {
     if (!item) return;
-    addItem(item, qty, selectedAddons);
+    addItem(item, qty);
     onClose();
   };
+
+  const isAvailable = item?.isAvailable ?? true;
+  const categoryName =
+    item?.categoryId?.name || "Uncategorized";
+  const imageUrl = item?.image || "/placeholder-image.jpg";
 
   return (
     <AnimatePresence>
@@ -83,21 +70,28 @@ export default function FoodDetailModal({ item, onClose }: Props) {
             <div className="overflow-y-auto">
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                 <img
-                  src={item.image as string}
+                  src={imageUrl}
                   alt={item.name}
                   width={1024}
                   height={1024}
                   className="h-full w-full object-cover"
                 />
+                {!isAvailable && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <Badge className="rounded-full px-4 py-2 text-sm font-bold bg-red-500">
+                      Unavailable
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6 p-6 sm:p-8">
                 <div>
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className="rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase"
                   >
-                    {item.category}
+                    {categoryName}
                   </Badge>
                   <h2 className="mt-3 text-3xl font-extrabold text-foreground">
                     {item.name}
@@ -105,6 +99,11 @@ export default function FoodDetailModal({ item, onClose }: Props) {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {item.description}
                   </p>
+                  {item.preparationTime && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      ⏱ Preparation time: {item.preparationTime} mins
+                    </p>
+                  )}
                   <div className="mt-4 flex items-baseline gap-3">
                     {item.discountPrice ? (
                       <>
@@ -123,78 +122,39 @@ export default function FoodDetailModal({ item, onClose }: Props) {
                   </div>
                 </div>
 
-                {item.addons.length > 0 && (
+                {suggested.length > 0 && (
                   <div>
                     <h3 className="mb-3 text-sm font-bold tracking-wider uppercase text-muted-foreground">
-                      Add-ons
+                      You may also like
                     </h3>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {item.addons.map((a) => {
-                        const on = !!selected[a.id];
-                        return (
-                          <motion.label
-                            key={a.id}
-                            whileTap={{ scale: 0.98 }}
-                            className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border-2 bg-card px-4 py-3 transition-colors"
-                            style={{
-                              borderColor: on
-                                ? "var(--primary)"
-                                : "var(--border)",
-                            }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Checkbox
-                                checked={on}
-                                onCheckedChange={() =>
-                                  setSelected((s) => ({
-                                    ...s,
-                                    [a.id]: !on,
-                                  }))
-                                }
-                                className="h-5 w-5"
-                              />
-                              <span className="text-sm font-semibold text-foreground">
-                                {a.name}
-                              </span>
+                    <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      {suggested.map((s) => (
+                        <motion.div
+                          key={s._id}
+                          whileHover={{ y: -4 }}
+                          className="w-36 shrink-0 overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-soft)]"
+                        >
+                          <img
+                            src={s.image || "/placeholder-image.jpg"}
+                            alt={s.name}
+                            className="h-24 w-full object-cover"
+                          />
+                          <div className="p-2">
+                            <div className="truncate text-xs font-bold">
+                              {s.name}
                             </div>
-                            <span className="text-sm font-bold text-foreground">
-                              +${a.price.toFixed(2)}
-                            </span>
-                          </motion.label>
-                        );
-                      })}
+                            <div className="text-xs text-muted-foreground">
+                              $
+                              {(s.discountPrice ?? s.price).toFixed(
+                                2,
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
                   </div>
                 )}
-
-                <div>
-                  <h3 className="mb-3 text-sm font-bold tracking-wider uppercase text-muted-foreground">
-                    You may also like
-                  </h3>
-                  <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {suggested.map((s) => (
-                      <motion.div
-                        key={s.id}
-                        whileHover={{ y: -4 }}
-                        className="w-36 shrink-0 overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-soft)]"
-                      >
-                        <img
-                          src={s.image as string}
-                          alt={s.name}
-                          className="h-24 w-full object-cover"
-                        />
-                        <div className="p-2">
-                          <div className="truncate text-xs font-bold">
-                            {s.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            ${(s.discountPrice ?? s.price).toFixed(2)}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -204,6 +164,7 @@ export default function FoodDetailModal({ item, onClose }: Props) {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   className="grid h-10 w-10 place-items-center rounded-full bg-card shadow-[var(--shadow-soft)]"
+                  disabled={!isAvailable}
                 >
                   <Minus className="h-4 w-4" />
                 </motion.button>
@@ -219,18 +180,26 @@ export default function FoodDetailModal({ item, onClose }: Props) {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setQty((q) => q + 1)}
                   className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-yellow)]"
+                  disabled={!isAvailable}
                 >
                   <Plus className="h-4 w-4" />
                 </motion.button>
               </div>
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={isAvailable ? { scale: 1.02 } : {}}
+                whileTap={isAvailable ? { scale: 0.98 } : {}}
                 onClick={handleAdd}
-                className="flex flex-1 items-center justify-center gap-3 rounded-full bg-secondary px-6 py-4 text-base font-extrabold text-secondary-foreground shadow-[var(--shadow-lift)]"
+                disabled={!isAvailable}
+                className={`flex flex-1 items-center justify-center gap-3 rounded-full px-6 py-4 text-base font-extrabold shadow-[var(--shadow-lift)] ${
+                  isAvailable
+                    ? "bg-secondary text-secondary-foreground"
+                    : "bg-muted-foreground/50 text-muted-foreground cursor-not-allowed opacity-50"
+                }`}
               >
                 <ShoppingCart className="h-5 w-5" />
-                Add to Cart — ${(unit * qty).toFixed(2)}
+                {isAvailable
+                  ? `Add to Cart — $${(unit * qty).toFixed(2)}`
+                  : "Unavailable"}
               </motion.button>
             </div>
           </motion.div>

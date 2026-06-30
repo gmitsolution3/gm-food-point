@@ -1,19 +1,20 @@
-import { StaticImageData } from "next/image";
-import { TCategory } from "./category.type";
+import { ICategory } from "./category.type";
 
-export interface IAddOn {
-  id: string;
-  name: string;
-  price: number;
-}
 
 export interface IMenuItem {
-  id: string;
+  _id: string;
   name: string;
+  slug: string;
   description: string;
-  category: TCategory;
+  categoryId: ICategory;
+  image: string;
   price: number;
-  discountPrice?: number;
-  image: string | StaticImageData;
-  addons: IAddOn[];
+  discountPrice: number | null;
+  preparationTime: number;
+  suggestedItems: string[];
+  displayOrder: number;
+  isAvailable: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

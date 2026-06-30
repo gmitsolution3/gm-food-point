@@ -47,6 +47,8 @@ export default function CategoryTabs({
 
   const categories = data?.data || [];
 
+  const isAllCategory = selectedCategory === "";
+
   return (
     <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <motion.button
@@ -54,17 +56,15 @@ export default function CategoryTabs({
         onClick={() => onChange("")}
         className="relative shrink-0 rounded-full border-2 px-5 py-2.5 text-sm font-bold transition-colors"
         style={{
-          borderColor:
-            selectedCategory === ""
-              ? "var(--primary)"
-              : "var(--border)",
-          color:
-            selectedCategory === ""
-              ? "var(--primary-foreground)"
-              : "var(--foreground)",
+          borderColor: isAllCategory
+            ? "var(--primary)"
+            : "var(--border)",
+          color: isAllCategory
+            ? "var(--primary-foreground)"
+            : "var(--foreground)",
         }}
       >
-        {selectedCategory === "" && (
+        {isAllCategory && (
           <motion.span
             layoutId="active-cat"
             className="absolute inset-0 rounded-full bg-primary"

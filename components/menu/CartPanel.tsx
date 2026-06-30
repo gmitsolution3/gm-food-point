@@ -9,7 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import router from "next/router";
 
 export default function CartPanel({
   embedded = false,
@@ -23,10 +23,12 @@ export default function CartPanel({
     subtotal,
     discount,
     tax,
+    taxPercentage,
+    serviceCharge,
+    serviceChargePercentage,
     total,
     orderType,
   } = useCart();
-  const router = useRouter();
 
   return (
     <div
@@ -162,7 +164,15 @@ export default function CartPanel({
           {discount > 0 && (
             <Row label="Discount" value={-discount} accent />
           )}
-          <Row label="Tax (8%)" value={tax} />
+          {tax > 0 && (
+            <Row label={`Tax (${taxPercentage}%)`} value={tax} />
+          )}
+          {serviceCharge > 0 && (
+            <Row
+              label={`Service Charge (${serviceChargePercentage}%)`}
+              value={serviceCharge}
+            />
+          )}
         </dl>
         <div className="my-3 h-px bg-border" />
         <div className="flex items-end justify-between">

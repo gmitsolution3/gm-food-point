@@ -9,17 +9,17 @@ export interface ICartItem {
 export interface ICartContextValue {
   items: ICartItem[];
   orderType: "dine-in" | "take-out" | null;
-  setOrderType: (t: "dine-in" | "take-out") => void;
-  addItem: (
-    item: IMenuItem,
-    quantity: number,
-  ) => void;
+  setOrderType: (type: "dine-in" | "take-out" | null) => void;
+  addItem: (item: IMenuItem, quantity: number) => void;
   updateQuantity: (lineId: string, qty: number) => void;
   removeItem: (lineId: string) => void;
   clear: () => void;
   subtotal: number;
   discount: number;
   tax: number;
+  taxPercentage: number; // Add this
+  serviceCharge: number;
+  serviceChargePercentage: number; // Add this
   total: number;
   totalItems: number;
 }

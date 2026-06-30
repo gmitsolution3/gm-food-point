@@ -1,5 +1,6 @@
 "use client";
 
+import { useFetch } from "@/hooks/swr/useFetch";
 import { ICartContextValue, ICartItem, IMenuItem } from "@/types";
 import {
   createContext,
@@ -25,6 +26,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [orderType, setOrderType] = useState<
     "dine-in" | "take-out" | null
   >(null);
+
+  // Fetch settings
+  const { data: settingsData } = useFetch<{
+    success: boolean;
+    statusCode: number;
+    message: string;
+    data: {
+      _id: string;
+      restaurantName: string;
+      restaurantLogo: string | null;
+      address: string;
+      contactNumber: string;
+      email: string;
+      currency: string;
+      taxPercentage: number;
+      serviceChargePercentage: number;
+      isTaxEnabled: boolean;
+      isServiceChargeEnabled: boolean;
+      orderNumberPrefix: string;
+      isRestaurantOpen: boolean;
+      createdAt: string;
+      updatedAt: string;
+    };
+  }>("/settings");
+
+  // Extract settings
+  const settings = settingsData?.data;
+  const taxPercentage = settings?.taxPercentage ?? 0;
+  const serviceChargePercentage =
+    settings?.serviceChargePercentage ?? 0;
+  const isTaxEnabled = settings?.isTaxEnabled ?? false;
+  const isServiceChargeEnabled =
+    settings?.isServiceChargeEnabled ?? false;
+
+  // Log settings
+  console.log("Settings:", settings);
 
   const addItem = (item: IMenuItem, quantity: number) => {
     const key = lineKey(item);
@@ -62,9 +99,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return s + base * ci.quantity;
     }, 0);
     const discount = subtotalRaw - effective;
-    const tax = effective * 0.08;
-    const total = effective + tax;
+
+    // Calculate tax based on settings
+    const tax = isTaxEnabled ? effective * (taxPercentage / 100) : 0;
+
+    // Calculate service charge based on settings
+    const serviceCharge = isServiceChargeEnabled
+      ? effective * (serviceChargePercentage / 100)
+      : 0;
+
+    const total = effective + tax + serviceCharge;
     const totalItems = items.reduce((s, ci) => s + ci.quantity, 0);
+
     return {
       items,
       orderType,
@@ -76,10 +122,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal: subtotalRaw,
       discount,
       tax,
+      taxPercentage: isTaxEnabled ? taxPercentage : 0, // Add this
+      serviceCharge,
+      serviceChargePercentage: isServiceChargeEnabled
+        ? serviceChargePercentage
+        : 0, // Add this
       total,
       totalItems,
     };
-  }, [items, orderType]);
+  }, [items, orderType, settings]);
 
   return (
     <CartContext.Provider value={value}>

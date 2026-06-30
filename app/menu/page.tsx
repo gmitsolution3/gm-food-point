@@ -1,7 +1,7 @@
 "use client";
 
 import CartPanel from "@/components/menu/CartPanel";
-import CategoryTabs from "@/components/menu/CategoryTab";
+import CategoryTabs from "@/components/menu/Category/CategoryTab";
 import FoodCard from "@/components/menu/FoodCard";
 import FoodDetailModal from "@/components/menu/FoodDetailModal";
 import MenuEmpty from "@/components/menu/MenuEmpty";
@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 export default function MenuPage() {
-  const [category, setCategory] = useState<string>("All");
+  const [category, setCategory] = useState<string>("");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<IMenuItem | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function MenuPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return MENU.filter((m) => {
-      const inCat = category === "All" || m.category === category;
+      const inCat = category === "" || m.category === category;
       const inQ =
         !q ||
         m.name.toLowerCase().includes(q) ||
@@ -100,7 +100,7 @@ export default function MenuPage() {
 
           {/* Categories */}
           <div className="mb-6">
-            <CategoryTabs active={category} onChange={setCategory} />
+            <CategoryTabs selectedCategory={category} onChange={setCategory} />
           </div>
 
           {/* Grid */}

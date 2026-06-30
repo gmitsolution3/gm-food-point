@@ -87,7 +87,7 @@ export default function CheckoutPage() {
     setDone({ orderId });
     clear();
 
-    console.log(data)
+    console.log({...data, items})
   };
 
   if (items.length === 0 && !done) {

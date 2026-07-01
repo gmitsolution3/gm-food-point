@@ -25,6 +25,7 @@ export default function CountDownModal({
   }>({ minutes: 0, seconds: 0, totalSeconds: 0 });
 
   const [isComplete, setIsComplete] = useState(false);
+  const [totalDuration, setTotalDuration] = useState(0); // Total duration in seconds
 
   useEffect(() => {
     if (!isOpen) return;
@@ -33,6 +34,13 @@ export default function CountDownModal({
       const now = new Date().getTime();
       const estimated = new Date(estimatedCompletionAt).getTime();
       const diff = Math.max(0, Math.floor((estimated - now) / 1000));
+
+      // Calculate total duration once (from now to estimated time)
+      if (totalDuration === 0 && diff > 0) {
+        // Use the preparation time or calculate from estimated time
+        // For now, we'll use the diff as total duration
+        setTotalDuration(diff);
+      }
 
       if (diff <= 0) {
         setIsComplete(true);
@@ -57,31 +65,27 @@ export default function CountDownModal({
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [estimatedCompletionAt, isOpen]);
+  }, [estimatedCompletionAt, isOpen, totalDuration]);
 
   // Format time display
   const formatTime = (minutes: number, seconds: number) => {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
-  // Calculate progress percentage (for visual indicator)
+  // Calculate progress percentage dynamically
   const getProgress = () => {
-    if (!estimatedCompletionAt || isComplete) return 0;
-
-    const now = new Date().getTime();
-    const estimated = new Date(estimatedCompletionAt).getTime();
-    const diff = estimated - now;
-
-    // Assume max wait time is 60 minutes (3600 seconds)
-    const maxWaitTime = 3600;
-    const progress = Math.min(
-      100,
-      ((maxWaitTime - diff / 1000) / maxWaitTime) * 100,
-    );
-    return Math.max(0, progress);
+    if (isComplete || totalDuration === 0) return 100;
+    
+    const elapsed = totalDuration - timeRemaining.totalSeconds;
+    const progress = (elapsed / totalDuration) * 100;
+    return Math.min(100, Math.max(0, progress));
   };
 
   const progress = getProgress();
+
+  // Calculate circle circumference
+  const radius = 58;
+  const circumference = 2 * Math.PI * radius;
 
   return (
     <AnimatePresence>
@@ -169,14 +173,31 @@ export default function CountDownModal({
                     <circle
                       cx="64"
                       cy="64"
-                      r="58"
+                      r={radius}
+                      fill="none"
+                      stroke="var(--muted)"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                    />
+                    <motion.circle
+                      cx="64"
+                      cy="64"
+                      r={radius}
                       fill="none"
                       stroke="var(--primary)"
                       strokeWidth="6"
                       strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 58}`}
-                      strokeDashoffset={`${2 * Math.PI * 58 * (1 - progress / 100)}`}
-                      className="transition-all duration-1000 ease-linear"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={circumference * (1 - progress / 100)}
+                      initial={{ strokeDashoffset: circumference }}
+                      animate={{ 
+                        strokeDashoffset: circumference * (1 - progress / 100)
+                      }}
+                      transition={{ 
+                        duration: 0.5,
+                        ease: "easeInOut"
+                      }}
+                      className="transition-all duration-500 ease-linear"
                     />
                   </svg>
 
@@ -200,13 +221,27 @@ export default function CountDownModal({
                             timeRemaining.seconds,
                           )}
                     </motion.span>
-                    {!isComplete && (
+                    {!isComplete && timeRemaining.totalSeconds > 0 && (
                       <span className="text-xs text-muted-foreground mt-1">
-                        minutes remaining
+                        {timeRemaining.totalSeconds > 60 
+                          ? "minutes remaining" 
+                          : "seconds remaining"}
+                      </span>
+                    )}
+                    {!isComplete && timeRemaining.totalSeconds === 0 && (
+                      <span className="text-xs text-muted-foreground mt-1">
+                        Almost ready!
                       </span>
                     )}
                   </div>
                 </div>
+
+                {/* Progress percentage */}
+                {!isComplete && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {Math.round(progress)}% complete
+                  </div>
+                )}
 
                 {/* Estimated completion time */}
                 {!isComplete && estimatedCompletionAt && (
@@ -237,7 +272,11 @@ export default function CountDownModal({
                     <span className="text-xs font-medium">
                       {isComplete
                         ? "Ready for pickup"
-                        : `${timeRemaining.totalSeconds > 0 ? "In progress" : "Almost ready"}`}
+                        : timeRemaining.totalSeconds > 0
+                          ? progress > 80
+                            ? "Almost ready!"
+                            : "In progress"
+                          : "Just a moment..."}
                     </span>
                   </div>
                 </div>

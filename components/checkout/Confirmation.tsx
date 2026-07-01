@@ -1,25 +1,42 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck, Clock } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 
-type Fulfillment = "dine-in" | "take-out";
+type OrderType = "dine-in" | "take-out";
 
 export default function Confirmation({
   orderId,
-  fulfillment,
+  orderType,
   total,
+  estimatedTime,
+  estimatedCompletionAt,
 }: {
   orderId: string;
-  fulfillment: Fulfillment;
+  orderType: OrderType;
   total: number;
+  estimatedTime?: number;
+  estimatedCompletionAt?: string;
 }) {
+  // Format the estimated completion time
+  const formatEstimatedTime = (dateString?: string) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
   const message =
-    fulfillment === "dine-in"
+    orderType === "dine-in"
       ? "We'll bring your order to your table shortly."
-      : fulfillment === "take-out"
+      : orderType === "take-out"
         ? "We'll have it ready at the counter soon."
         : "Our courier will be on the way shortly.";
+
+  const estimatedTimeFormatted = formatEstimatedTime(estimatedCompletionAt);
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
       <motion.div
@@ -55,7 +72,7 @@ export default function Confirmation({
               {message}
             </p>
 
-            <div className="mt-6 rounded-2xl bg-muted/60 p-4 text-left">
+            <div className="mt-6 rounded-2xl bg-muted/60 p-4 text-left space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
                   Order ID
@@ -64,26 +81,47 @@ export default function Confirmation({
                   {orderId}
                 </span>
               </div>
-              <div className="mt-2 flex justify-between text-sm">
+              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  Total paid
+                  Total
                 </span>
                 <span className="font-extrabold">
                   ${total.toFixed(2)}
                 </span>
               </div>
+              {estimatedTime && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    Prep Time
+                  </span>
+                  <span className="font-extrabold">
+                    ~{estimatedTime} mins
+                  </span>
+                </div>
+              )}
+              {estimatedTimeFormatted && (
+                <div className="flex justify-between text-sm border-t border-border/50 pt-2 mt-1">
+                  <span className="text-muted-foreground">
+                    Estimated Ready
+                  </span>
+                  <span className="font-extrabold text-primary">
+                    {estimatedTimeFormatted}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex flex-col gap-2">
               <Link
                 href="/menu"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)]"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)] transition-colors hover:bg-primary/90"
               >
                 Order Again <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-secondary bg-card px-6 py-3.5 text-sm font-extrabold text-foreground"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-secondary bg-card px-6 py-3.5 text-sm font-extrabold text-foreground transition-colors hover:bg-secondary"
               >
                 Back to Home
               </Link>

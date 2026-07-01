@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ComponentType } from "react";
 
-export default function FulFillmentOption({
+export default function OrderTypeOption({
   active,
   onClick,
   Icon,

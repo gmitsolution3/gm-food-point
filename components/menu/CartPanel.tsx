@@ -9,7 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function CartPanel({
   embedded = false,
@@ -29,6 +29,8 @@ export default function CartPanel({
     total,
     orderType,
   } = useCart();
+
+  const router = useRouter();
 
   return (
     <div

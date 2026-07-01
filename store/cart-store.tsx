@@ -1,7 +1,12 @@
 "use client";
 
 import { useFetch } from "@/hooks/swr/useFetch";
-import { ICartContextValue, ICartItem, IMenuItem } from "@/types";
+import {
+  ICartContextValue,
+  ICartItem,
+  IMenuItem,
+  ISettings,
+} from "@/types";
 import {
   createContext,
   useContext,
@@ -32,23 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     success: boolean;
     statusCode: number;
     message: string;
-    data: {
-      _id: string;
-      restaurantName: string;
-      restaurantLogo: string | null;
-      address: string;
-      contactNumber: string;
-      email: string;
-      currency: string;
-      taxPercentage: number;
-      serviceChargePercentage: number;
-      isTaxEnabled: boolean;
-      isServiceChargeEnabled: boolean;
-      orderNumberPrefix: string;
-      isRestaurantOpen: boolean;
-      createdAt: string;
-      updatedAt: string;
-    };
+    data: ISettings;
   }>("/settings");
 
   // Extract settings
@@ -59,9 +48,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const isTaxEnabled = settings?.isTaxEnabled ?? false;
   const isServiceChargeEnabled =
     settings?.isServiceChargeEnabled ?? false;
-
-  // Log settings
-  console.log("Settings:", settings);
 
   const addItem = (item: IMenuItem, quantity: number) => {
     const key = lineKey(item);

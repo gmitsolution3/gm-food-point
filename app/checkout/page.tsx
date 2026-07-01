@@ -4,24 +4,25 @@ import CartEmpty from "@/components/checkout/CartEmpty";
 import CheckoutCard from "@/components/checkout/CheckoutCard";
 import CheckoutField from "@/components/checkout/CheckoutField";
 import Confirmation from "@/components/checkout/Confirmation";
-import FulFillmentOption from "@/components/checkout/FulFillmentOption";
+import OrderTypeOption from "@/components/checkout/OrderType";
 import PaymentOption from "@/components/checkout/PaymentOption";
 import SummaryRow from "@/components/checkout/SummeryRow";
 
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { usePost } from "@/hooks/swr/usePost";
 import { useCart } from "@/store/cart-store";
+import { IOrder } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
   ArrowRight,
   Banknote,
-  CreditCard,
   Hash,
   Loader2,
+  MessageCircleMore,
   ShieldCheck,
   ShoppingBag,
-  Smartphone,
   UtensilsCrossed,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -31,63 +32,99 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
-type Fulfillment = "dine-in" | "take-out";
-type Payment = "cash" | "card" | "mobile";
+type OrderType = "dine-in" | "take-out";
+
+interface IOrderResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: IOrder;
+}
 
 // Zod schema for validation
 const checkoutSchema = z.object({
-  table: z.string().min(1, "Table number is required"),
+  tableNumber: z.string().min(1, "Table number is required"),
   notes: z
     .string()
     .max(240, "Notes cannot exceed 240 characters")
     .default(""),
-  payment: z.enum(["cash", "card", "mobile"]),
-  fulfillment: z.enum(["dine-in", "take-out"]),
+  payment: z.enum(["cash", "wechat"]),
+  orderType: z.enum(["dine-in", "take-out"]),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { items, subtotal, discount, tax, total, orderType, clear } =
-    useCart();
+  const {
+    mutate: placeOrder,
+    isLoading,
+    isError,
+    data: orderData,
+  } = usePost<IOrderResponse>("/orders");
 
-  const defaultFulfillment: Fulfillment =
+  const router = useRouter();
+  const {
+    items,
+    subtotal,
+    discount,
+    tax,
+    taxPercentage,
+    serviceCharge,
+    serviceChargePercentage,
+    total,
+    orderType,
+    clear,
+  } = useCart();
+
+  const defaultOrderType: OrderType =
     orderType === "dine-in" ? "dine-in" : "take-out";
 
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<null | { orderId: string }>(null);
+  const [done, setDone] = useState<null | IOrderResponse>(null);
 
   const {
     control,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<z.input<typeof checkoutSchema>, any, z.output<typeof checkoutSchema>>({
+  } = useForm<
+    z.input<typeof checkoutSchema>,
+    any,
+    z.output<typeof checkoutSchema>
+  >({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      table: "15",
+      tableNumber: "15",
       notes: "",
-      payment: "card",
-      fulfillment: defaultFulfillment,
+      payment: "cash",
+      orderType: defaultOrderType,
     },
   });
 
   const formValues = watch();
-  const currentFulfillment = watch("fulfillment");
+  const currentOrderType = watch("orderType");
 
   const grandTotal = total;
 
   const onSubmit = async (data: CheckoutFormData) => {
-    setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1100));
-    const orderId =
-      "GLD-" + Math.floor(100000 + Math.random() * 900000);
-    setSubmitting(false);
-    setDone({ orderId });
-    clear();
+    const transformedItems = items.map((item) => ({
+      menuId: item.item._id,
+      quantity: item.quantity,
+    }));
 
-    console.log({...data, items})
+    const orderPayload = {
+      ...data,
+      paymentMethod: data.payment,
+      createdBy: "customer",
+      tableNumber: Number(data.tableNumber),
+      items: transformedItems,
+    };
+
+    const response = await placeOrder(orderPayload);
+
+    if (response?.success) {
+      setDone(response);
+      clear();
+    }
   };
 
   if (items.length === 0 && !done) {
@@ -97,10 +134,37 @@ export default function CheckoutPage() {
   if (done) {
     return (
       <Confirmation
-        orderId={done.orderId}
-        fulfillment={currentFulfillment || defaultFulfillment}
-        total={grandTotal}
+        orderId={done.data.orderNumber}
+        orderType={
+          done.data.orderType || currentOrderType || defaultOrderType
+        }
+        total={done.data.grandTotal}
+        estimatedTime={done.data.orderPreparationTime}
+        estimatedCompletionAt={done.data.estimatedCompletionAt}
       />
+    );
+  }
+
+  // Handle error state
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-4xl mb-4">⚠️</div>
+          <h3 className="text-lg font-bold mb-2">
+            Failed to place order
+          </h3>
+          <p className="text-muted-foreground">
+            Please try again later
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-full bg-primary px-6 py-2 text-sm font-bold text-primary-foreground"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -137,25 +201,25 @@ export default function CheckoutPage() {
             transition={{ duration: 0.3 }}
             className="space-y-6"
           >
-            {/* Fulfillment */}
+            {/* Order Type */}
             <CheckoutCard
               title="Order type"
               subtitle="How would you like to enjoy your meal?"
             >
               <div className="grid gap-3 sm:grid-cols-2">
                 <Controller
-                  name="fulfillment"
+                  name="orderType"
                   control={control}
                   render={({ field }) => (
                     <>
-                      <FulFillmentOption
+                      <OrderTypeOption
                         active={field.value === "dine-in"}
                         onClick={() => field.onChange("dine-in")}
                         Icon={UtensilsCrossed}
                         title="Dine In"
                         desc="Enjoy at our restaurant"
                       />
-                      <FulFillmentOption
+                      <OrderTypeOption
                         active={field.value === "take-out"}
                         onClick={() => field.onChange("take-out")}
                         Icon={ShoppingBag}
@@ -171,7 +235,7 @@ export default function CheckoutPage() {
             {/* Table Number */}
             <CheckoutCard title="Table number">
               <Controller
-                name="table"
+                name="tableNumber"
                 control={control}
                 render={({ field }) => (
                   <CheckoutField
@@ -180,11 +244,11 @@ export default function CheckoutPage() {
                     value={field.value}
                     onChange={(v) =>
                       field.onChange(
-                        v.replace(/[^0-9A-Za-z]/g, "").slice(0, 6)
+                        v.replace(/[^0-9A-Za-z]/g, "").slice(0, 6),
                       )
                     }
                     placeholder="e.g. 12"
-                    error={errors.table?.message}
+                    error={errors.tableNumber?.message}
                     maxLength={6}
                   />
                 )}
@@ -196,32 +260,25 @@ export default function CheckoutPage() {
               title="Payment method"
               subtitle="You won't be charged until you place the order."
             >
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Controller
                   name="payment"
                   control={control}
                   render={({ field }) => (
                     <>
                       <PaymentOption
-                        active={field.value === "card"}
-                        onClick={() => field.onChange("card")}
-                        Icon={CreditCard}
-                        title="Card"
-                        desc="Visa, MC, Amex"
-                      />
-                      <PaymentOption
-                        active={field.value === "mobile"}
-                        onClick={() => field.onChange("mobile")}
-                        Icon={Smartphone}
-                        title="Mobile Pay"
-                        desc="Apple / Google Pay"
-                      />
-                      <PaymentOption
                         active={field.value === "cash"}
                         onClick={() => field.onChange("cash")}
                         Icon={Banknote}
                         title="Cash"
-                        desc="Pay on arrival"
+                        desc="Pay on counter"
+                      />
+                      <PaymentOption
+                        active={field.value === "wechat"}
+                        onClick={() => field.onChange("wechat")}
+                        Icon={MessageCircleMore}
+                        title="WeChat Pay"
+                        desc="Pay via WeChat"
                       />
                     </>
                   )}
@@ -277,13 +334,13 @@ export default function CheckoutPage() {
               </div>
               <ul className="max-h-64 space-y-3 overflow-y-auto p-5">
                 {items.map((ci) => {
-                  const unit =
-                    (ci.item.discountPrice ?? ci.item.price) +
-                    ci.addons.reduce((s, a) => s + a.price, 0);
+                  const unit = ci.item.discountPrice ?? ci.item.price;
                   return (
                     <li key={ci.lineId} className="flex gap-3">
                       <img
-                        src={ci.item.image as string}
+                        src={
+                          ci.item.image || "/placeholder-image.jpg"
+                        }
                         alt={ci.item.name}
                         className="h-12 w-12 shrink-0 rounded-xl object-cover"
                       />
@@ -313,7 +370,18 @@ export default function CheckoutPage() {
                     accent
                   />
                 )}
-                <SummaryRow label="Tax (8%)" value={tax} />
+                {tax > 0 && (
+                  <SummaryRow
+                    label={`Tax (${taxPercentage}%)`}
+                    value={tax}
+                  />
+                )}
+                {serviceCharge > 0 && (
+                  <SummaryRow
+                    label={`Service Charge (${serviceChargePercentage}%)`}
+                    value={serviceCharge}
+                  />
+                )}
                 <div className="my-3 h-px bg-border" />
                 <div className="flex items-end justify-between">
                   <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
@@ -330,12 +398,12 @@ export default function CheckoutPage() {
                 </div>
                 <motion.button
                   type="submit"
-                  whileHover={{ scale: submitting ? 1 : 1.02 }}
-                  whileTap={{ scale: submitting ? 1 : 0.98 }}
-                  disabled={submitting}
+                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  disabled={isLoading}
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)] disabled:opacity-70"
                 >
-                  {submitting ? (
+                  {isLoading ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />{" "}
                       Placing order...

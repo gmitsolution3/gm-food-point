@@ -1,4 +1,4 @@
-// hooks/usePost.ts
+// hooks/swr/usePost.ts
 import { postFetcher } from "@/lib/fetchers/postFetcher";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
@@ -7,7 +7,7 @@ type UsePostOptions = {
   revalidateKey?: string | string[];
 };
 
-export const usePost = (url: string, options?: UsePostOptions) => {
+export const usePost = <T = any>(url: string, options?: UsePostOptions) => {
   const { trigger, data, error, isMutating } = useSWRMutation(
     url,
     postFetcher,
@@ -25,7 +25,7 @@ export const usePost = (url: string, options?: UsePostOptions) => {
   );
 
   return {
-    data,
+    data: data as T,
     isLoading: isMutating,
     isError: error,
     mutate: trigger,

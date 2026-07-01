@@ -2,3 +2,5 @@ export * from "./cart.type";
 export * from "./category.type";
 export * from "./menu-item.type";
 export * from "./meta.type";
+export * from "./order.type";
+export * from "./settings.type";

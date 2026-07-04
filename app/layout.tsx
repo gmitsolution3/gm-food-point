@@ -1,3 +1,4 @@
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { SocketProvider } from "@/socket/socket-provider";
 import { CartProvider } from "@/store/cart-store";
@@ -42,10 +43,12 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <SocketProvider>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
+          <TooltipProvider>
+            <CartProvider>
+              {children}
+              <Toaster />
+            </CartProvider>
+          </TooltipProvider>
         </SocketProvider>
       </body>
     </html>

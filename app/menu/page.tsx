@@ -46,7 +46,7 @@ export default function MenuPage() {
     page: "1",
     limit: "100",
     categoryId: category,
-    search: debouncedQuery,
+    searchTerm: debouncedQuery,
   });
 
   const { data, isLoading, isError, refetch } =

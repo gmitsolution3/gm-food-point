@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { usePost } from "@/hooks/swr/usePost";
 import { useCart } from "@/store/cart-store";
-import { IOrder } from "@/types";
+import { IOrder, IPayment } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -38,7 +38,7 @@ interface IOrderResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  data: IOrder;
+  data: { order: IOrder; payment: IPayment };
 }
 
 // Zod schema for validation
@@ -79,7 +79,7 @@ export default function CheckoutPage() {
   const defaultOrderType: OrderType =
     orderType === "dine-in" ? "dine-in" : "take-out";
 
-  const [done, setDone] = useState<null | IOrderResponse>(null);
+  const [done, setDone] = useState<null | IOrder>(null);
 
   const {
     control,
@@ -121,8 +121,10 @@ export default function CheckoutPage() {
 
     const response = await placeOrder(orderPayload);
 
+    console.log(response);
+
     if (response?.success) {
-      setDone(response);
+      setDone(response?.data?.order);
       clear();
     }
   };
@@ -134,13 +136,13 @@ export default function CheckoutPage() {
   if (done) {
     return (
       <Confirmation
-        orderId={done.data.orderNumber}
+        orderId={done.orderNumber}
         orderType={
-          done.data.orderType || currentOrderType || defaultOrderType
+          done.orderType || currentOrderType || defaultOrderType
         }
-        total={done.data.grandTotal}
-        estimatedTime={done.data.orderPreparationTime}
-        estimatedCompletionAt={done.data.estimatedCompletionAt}
+        total={done.grandTotal}
+        estimatedTime={done.orderPreparationTime}
+        estimatedCompletionAt={done.estimatedCompletionAt}
       />
     );
   }

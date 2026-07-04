@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/store/cart-store";
 import {
   ArrowRight,
@@ -9,16 +10,34 @@ import {
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import { useEffect } from "react";
+
+import { useSocket } from "@/socket/socket-provider";
 
 export default function Home() {
   const { setOrderType } = useCart();
   const router = useRouter();
 
+  const socket = useSocket();
+
   const choose = (type: "dine-in" | "take-out") => {
     setOrderType(type);
     router.push("/menu");
   };
+
+  useEffect(() => {
+    socket.emit("join:room", {
+      role: "cashier",
+    });
+
+    socket.on("order:created", (payload) => {
+      console.log("Received:", payload);
+    });
+
+    return () => {
+      socket.off("order:created");
+    };
+  }, [socket]);
 
   const options = [
     {
@@ -67,8 +86,8 @@ export default function Home() {
           </div>
         </div>
 
-        <Badge 
-          variant="secondary" 
+        <Badge
+          variant="secondary"
           className="mb-4 inline-flex items-center gap-2 rounded-full p-4 text-xs font-semibold tracking-wider uppercase"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />

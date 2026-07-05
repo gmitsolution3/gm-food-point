@@ -16,3 +16,15 @@ export interface IPayment {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface IPendingPayment {
+  paymentId: string;
+  orderId: string;
+  orderNumber: string;
+  tableNumber: number;
+  paymentMethod: string;
+  amount: number;
+  waitingTime: number;
+  createdAt: string;
+  expiresAt: string;
+}

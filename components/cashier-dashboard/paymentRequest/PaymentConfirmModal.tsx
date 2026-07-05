@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { IPendingPayment } from "@/types/payment.type";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Loader2 } from "lucide-react";
 
 interface PaymentConfirmModalProps {
   selectedPayment: IPendingPayment | null;
@@ -20,6 +20,7 @@ interface PaymentConfirmModalProps {
   paymentAmount: string;
   setSelectedPayment: (p: IPendingPayment | null) => void;
   handleConfirm: () => void;
+  isPaymentConfirming: boolean;
 }
 
 export default function PaymentConfirmModal({
@@ -30,6 +31,7 @@ export default function PaymentConfirmModal({
   paymentAmount,
   setSelectedPayment,
   handleConfirm,
+  isPaymentConfirming,
 }: PaymentConfirmModalProps) {
   return (
     <Dialog
@@ -97,11 +99,20 @@ export default function PaymentConfirmModal({
           <Button
             onClick={handleConfirm}
             disabled={
-              !paymentAmount || parseFloat(paymentAmount) <= 0
+              !paymentAmount ||
+              parseFloat(paymentAmount) <= 0 ||
+              isPaymentConfirming
             }
             className="bg-green-500 hover:bg-green-600"
           >
-            Confirm Payment
+            {isPaymentConfirming ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Confirming...
+              </>
+            ) : (
+              <>Confirm payment</>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -3,7 +3,7 @@
 import { useFetch } from "@/hooks/swr/useFetch";
 import { useSocket } from "@/socket/socket-provider";
 import { notify } from "@/utils";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // Shadcn/ui imports
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,6 @@ import {
   Clock,
   CreditCard,
   DollarSign,
-  Loader2,
   Table,
 } from "lucide-react";
 
@@ -30,100 +29,127 @@ import PaymentRequestLoader from "@/components/cashier-dashboard/paymentRequest/
 import { usePost } from "@/hooks/swr/usePost";
 import { IPendingPayment } from "@/types";
 
+// Constants
+const SOCKET_EVENTS = {
+  CONNECT: "connect",
+  ORDER_CREATED: "order:created",
+  JOIN_ROOM: "join:room",
+} as const;
+
+const ROLES = {
+  CASHIER: "cashier",
+} as const;
+
+// Payment Info Row Component
+const PaymentInfoRow = ({
+  icon: Icon,
+  label,
+  value,
+  valueClassName = "font-semibold",
+}: {
+  icon: any;
+  label: string;
+  value: React.ReactNode;
+  valueClassName?: string;
+}) => (
+  <div className="flex justify-between items-center">
+    <span className="text-gray-600 flex items-center gap-1">
+      <Icon className="w-4 h-4" />
+      {label}:
+    </span>
+    <span className={valueClassName}>{value}</span>
+  </div>
+);
+
 export default function CashierDashboard() {
   const { data, isLoading, isError, refetch } = useFetch(
     "/payments/pending",
   );
-  const [confirmingId, setConfirmingId] = useState<string | null>(
-    null,
-  );
+  const socket = useSocket();
+
+  // State for payment confirmation
   const [selectedPayment, setSelectedPayment] =
     useState<IPendingPayment | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-  const {
-    mutate: confirmPayment,
-    isLoading: isPaymentConfirming,
-    isError: isPaymentConfirmingError,
-  } = usePost(`/payments/cash/${selectedPayment?.paymentId}/confirm`);
+  // API hook for confirming payment
+  const { mutate: confirmPayment, isLoading: isPaymentConfirming } =
+    usePost(`/payments/cash/${selectedPayment?.paymentId}/confirm`);
 
-  const socket = useSocket();
-
-  // Listen for new orders
+  // Socket connection and event listeners
   useEffect(() => {
     if (!socket) return;
 
-    // Function to join the room
     const joinRoom = () => {
-      socket.emit("join:room", {
-        role: "cashier",
+      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+        role: ROLES.CASHIER,
       });
     };
 
-    // Handle socket connection
     const handleConnect = () => {
       joinRoom();
     };
 
-    // Handle new order
     const handleNewOrder = (newOrder: any) => {
       notify.success(`New order ${newOrder.orderNumber} received!`);
       refetch();
     };
 
-    // If socket is already connected, join room immediately
     if (socket.connected) {
       joinRoom();
     }
 
-    // Listen for connection event
-    socket.on("connect", handleConnect);
+    socket.on(SOCKET_EVENTS.CONNECT, handleConnect);
+    socket.on(SOCKET_EVENTS.ORDER_CREATED, handleNewOrder);
 
-    // Listen for new orders
-    socket.on("order:created", handleNewOrder);
-
-    // Cleanup listeners on unmount
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("order:created", handleNewOrder);
+      socket.off(SOCKET_EVENTS.CONNECT, handleConnect);
+      socket.off(SOCKET_EVENTS.ORDER_CREATED, handleNewOrder);
     };
   }, [socket, refetch]);
 
-  const handleConfirmClick = (payment: IPendingPayment) => {
-    setSelectedPayment(payment);
-    setPaymentAmount(payment.amount.toString());
-    setIsConfirmModalOpen(true);
-  };
+  // Handle confirm button click
+  const handleConfirmClick = useCallback(
+    (payment: IPendingPayment) => {
+      setSelectedPayment(payment);
+      setPaymentAmount(payment.amount.toString());
+      setIsConfirmModalOpen(true);
+    },
+    [],
+  );
 
-  const handleConfirm = async () => {
+  // Handle payment confirmation
+  const handleConfirm = useCallback(async () => {
     if (!selectedPayment) return;
 
-    setConfirmingId(selectedPayment.paymentId);
     try {
-
       const response = await confirmPayment({
-        amountReceived: parseFloat(paymentAmount)
+        amountReceived: parseFloat(paymentAmount),
       });
 
-      if(response.success) {
-         notify.success(
+      if (response.success) {
+        notify.success(
           `Payment ${selectedPayment.orderNumber} confirmed successfully!`,
         );
-
         refetch();
         setIsConfirmModalOpen(false);
         setSelectedPayment(null);
         setPaymentAmount("");
       }
-      
     } catch (error: any) {
       notify.error(error.message || "Error confirming payment");
-    } finally {
-      setConfirmingId(null);
     }
-  };
+  }, [selectedPayment, paymentAmount, confirmPayment, refetch]);
 
+  // Handle modal close
+  const handleCloseModal = useCallback(() => {
+    setIsConfirmModalOpen(false);
+    setSelectedPayment(null);
+    setPaymentAmount("");
+  }, []);
+
+  // Early returns for loading and error states
   if (isLoading) {
     return <PaymentRequestLoader />;
   }
@@ -137,6 +163,7 @@ export default function CashierDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">
             Payment Requests 🔔
@@ -147,8 +174,8 @@ export default function CashierDashboard() {
               className="bg-green-500 hover:bg-green-600 gap-2"
             >
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-300"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-300" />
               </span>
               Live
             </Badge>
@@ -161,6 +188,7 @@ export default function CashierDashboard() {
           </div>
         </div>
 
+        {/* Payment Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {payments.map((payment) => (
             <Card
@@ -182,68 +210,57 @@ export default function CashierDashboard() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <DollarSign className="w-4 h-4" />
-                    Amount:
-                  </span>
-                  <span className="font-semibold">
-                    ${payment.amount.toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <CreditCard className="w-4 h-4" />
-                    Method:
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="capitalize bg-white/50 text-gray-600"
-                  >
-                    {payment.paymentMethod}
-                  </Badge>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    Waiting:
-                  </span>
-                  <span className="text-sm font-medium">
-                    {Math.floor(payment.waitingTime / 60)}m{" "}
-                    {payment.waitingTime % 60}s
-                  </span>
-                </div>
+                <PaymentInfoRow
+                  icon={DollarSign}
+                  label="Amount"
+                  value={`$${payment.amount.toFixed(2)}`}
+                />
+                <PaymentInfoRow
+                  icon={CreditCard}
+                  label="Method"
+                  value={
+                    <Badge
+                      variant="outline"
+                      className="capitalize bg-white/50 text-gray-600"
+                    >
+                      {payment.paymentMethod}
+                    </Badge>
+                  }
+                />
+                <PaymentInfoRow
+                  icon={Clock}
+                  label="Waiting"
+                  value={`${Math.floor(payment.waitingTime / 60)}m ${
+                    payment.waitingTime % 60
+                  }s`}
+                  valueClassName="text-sm font-medium"
+                />
               </CardContent>
 
               <CardFooter className="pt-2 flex-col gap-3">
                 <div className="text-xs text-gray-500 w-full text-center">
                   Expires:{" "}
-                  {new Date(payment.expiresAt).toLocaleTimeString()}
+                  {new Date(payment.expiresAt).toLocaleTimeString(
+                    [],
+                    {
+                      hour12: true,
+                    },
+                  )}
                 </div>
                 <Button
                   onClick={() => handleConfirmClick(payment)}
-                  disabled={confirmingId === payment.paymentId}
+                  disabled={isPaymentConfirming}
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
                 >
-                  {confirmingId === payment.paymentId ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Confirming...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Confirm Payment
-                    </>
-                  )}
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Confirm Payment
                 </Button>
               </CardFooter>
             </Card>
           ))}
         </div>
 
+        {/* Empty State */}
         {payments.length === 0 && (
           <div className="text-center text-gray-500 mt-12">
             No payment request available now.
@@ -255,11 +272,12 @@ export default function CashierDashboard() {
       <PaymentConfirmModal
         selectedPayment={selectedPayment}
         isConfirmModalOpen={isConfirmModalOpen}
-        setIsConfirmModalOpen={setIsConfirmModalOpen}
+        setIsConfirmModalOpen={handleCloseModal}
         setPaymentAmount={setPaymentAmount}
-        setSelectedPayment={setSelectedPayment}
+        setSelectedPayment={handleCloseModal}
         paymentAmount={paymentAmount}
         handleConfirm={handleConfirm}
+        isPaymentConfirming={isPaymentConfirming}
       />
     </div>
   );

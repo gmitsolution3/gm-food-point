@@ -1,10 +1,16 @@
 "use client";
 
-import Countdown from "@/components/home/order/Countdown";
+import Countdown from "@/components/order-summery/Countdown";
+import OrderSummaryError from "@/components/order-summery/OrderSummaryError";
+import OrderSummaryLoader from "@/components/order-summery/OrderSummeryLoader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFetchById } from "@/hooks/swr/useFetchById";
+import { useSocket } from "@/socket/socket-provider";
+import { SOCKET_EVENTS } from "@/socket/socket.events";
 import { IOrder } from "@/types";
+import { notify } from "@/utils";
+import { playNotification } from "@/utils/playNotification";
 import {
   AlertCircle,
   ArrowLeft,
@@ -13,7 +19,6 @@ import {
   Clock,
   Clock as ClockIcon,
   CreditCard,
-  Loader2,
   Package,
   Utensils,
   XCircle,
@@ -21,6 +26,7 @@ import {
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 type OrderStatus =
   | "awaiting_payment"
@@ -120,39 +126,46 @@ export default function OrderSummeryPage() {
 
   const order = data?.data;
 
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const joinRoom = () => {
+      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+        tableNumber: 15,
+      });
+    };
+
+    const handleConnect = () => {
+      joinRoom();
+    };
+
+    const handleNewNotification = (notification: string) => {
+      playNotification();
+      notify.success(notification);
+      refetch();
+    };
+
+    if (socket.connected) {
+      joinRoom();
+    }
+
+    socket.on(SOCKET_EVENTS.CONNECT, handleConnect);
+    socket.on(SOCKET_EVENTS.NOTIFICATION, handleNewNotification);
+
+    return () => {
+      socket.off(SOCKET_EVENTS.CONNECT, handleConnect);
+      socket.off(SOCKET_EVENTS.NOTIFICATION, handleNewNotification);
+    };
+  }, [socket]);
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            Loading order...
-          </p>
-        </div>
-      </div>
-    );
+    return <OrderSummaryLoader />;
   }
 
   if (isError || !order) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <h3 className="text-lg font-bold mb-2">
-            Failed to load order
-          </h3>
-          <p className="text-muted-foreground">
-            {isError ? "Please try again later" : "Order not found"}
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="mt-4 rounded-full bg-primary px-6 py-2 text-sm font-bold text-primary-foreground"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
+    return <OrderSummaryError isError={isError} refetch={refetch} />;
   }
 
   const currentStatus = order?.status as OrderStatus;

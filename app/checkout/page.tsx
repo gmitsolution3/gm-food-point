@@ -3,7 +3,6 @@
 import CartEmpty from "@/components/checkout/CartEmpty";
 import CheckoutCard from "@/components/checkout/CheckoutCard";
 import CheckoutField from "@/components/checkout/CheckoutField";
-import Confirmation from "@/components/checkout/Confirmation";
 import OrderTypeOption from "@/components/checkout/OrderType";
 import PaymentOption from "@/components/checkout/PaymentOption";
 import SummaryRow from "@/components/checkout/SummeryRow";
@@ -101,8 +100,6 @@ export default function CheckoutPage() {
     },
   });
 
-  const currentOrderType = watch("orderType");
-
   const grandTotal = total;
 
   const onSubmit = async (data: CheckoutFormData) => {
@@ -132,20 +129,6 @@ export default function CheckoutPage() {
 
   if (items.length === 0 && !done) {
     return <CartEmpty />;
-  }
-
-  if (done) {
-    return (
-      <Confirmation
-        orderId={done.orderNumber}
-        orderType={
-          done.orderType || currentOrderType || defaultOrderType
-        }
-        total={done.grandTotal}
-        estimatedTime={done.orderPreparationTime}
-        estimatedCompletionAt={done.estimatedCompletionAt}
-      />
-    );
   }
 
   // Handle error state

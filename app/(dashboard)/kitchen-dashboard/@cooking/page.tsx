@@ -5,10 +5,11 @@ import { OrderColumn } from "@/components/kitchen-dashboard/OrderColumn";
 import { useFetch } from "@/hooks/swr/useFetch";
 import { axiosInstance } from "@/lib/axios";
 import { useSocket } from "@/socket/socket-provider";
+import { SOCKET_EVENTS, ROLES } from "@/socket/socket.events";
+import { IKitchenOrder } from "@/types";
 import { notify } from "@/utils";
 import { ChefHat } from "lucide-react";
 import { useCallback, useEffect } from "react";
-import {IKitchenOrder} from "@/types";
 
 export default function CookingOrders() {
   const socket = useSocket();
@@ -24,8 +25,8 @@ export default function CookingOrders() {
 
     // Function to join the room
     const joinRoom = () => {
-      socket.emit("join:room", {
-        role: "kitchen",
+      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+        role: ROLES.KITCHEN,
       });
     };
 
@@ -46,15 +47,15 @@ export default function CookingOrders() {
     }
 
     // Listen for connection event
-    socket.on("connect", handleConnect);
+    socket.on(SOCKET_EVENTS.CONNECT, handleConnect);
 
     // Listen for order started cooking
-    socket.on("order:cooking", handleCookingCookingOrder);
+    socket.on(SOCKET_EVENTS.ORDER_COOKING, handleCookingCookingOrder);
 
     // Cleanup listeners on unmount
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("order:cooking", handleCookingCookingOrder);
+      socket.off(SOCKET_EVENTS.CONNECT, handleConnect);
+      socket.off(SOCKET_EVENTS.ORDER_COOKING, handleCookingCookingOrder);
     };
   }, [socket, refetch]);
 

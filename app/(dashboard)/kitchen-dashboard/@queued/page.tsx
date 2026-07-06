@@ -5,6 +5,7 @@ import { OrderColumn } from "@/components/kitchen-dashboard/OrderColumn";
 import { useFetch } from "@/hooks/swr/useFetch";
 import { axiosInstance } from "@/lib/axios";
 import { useSocket } from "@/socket/socket-provider";
+import { ROLES, SOCKET_EVENTS } from "@/socket/socket.events";
 import { IKitchenOrder } from "@/types";
 import { notify } from "@/utils";
 import { Clock } from "lucide-react";
@@ -24,8 +25,8 @@ export default function QueuedOrders() {
 
     // Function to join the room
     const joinRoom = () => {
-      socket.emit("join:room", {
-        role: "kitchen",
+      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+        role: ROLES.KITCHEN,
       });
     };
 
@@ -46,15 +47,15 @@ export default function QueuedOrders() {
     }
 
     // Listen for connection event
-    socket.on("connect", handleConnect);
+    socket.on(SOCKET_EVENTS.CONNECT, handleConnect);
 
     // Listen for new orders
-    socket.on("order:queued", handleNewOrder);
+    socket.on(SOCKET_EVENTS.ORDER_QUEUED, handleNewOrder);
 
     // Cleanup listeners on unmount
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("order:queued", handleNewOrder);
+      socket.off(SOCKET_EVENTS.CONNECT, handleConnect);
+      socket.off(SOCKET_EVENTS.ORDER_QUEUED, handleNewOrder);
     };
   }, [socket, refetch]);
 

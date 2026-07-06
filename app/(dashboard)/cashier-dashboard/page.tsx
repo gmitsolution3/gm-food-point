@@ -28,38 +28,8 @@ import PaymentRequestError from "@/components/cashier-dashboard/paymentRequest/P
 import PaymentRequestLoader from "@/components/cashier-dashboard/paymentRequest/PaymentRequestLoader";
 import { usePost } from "@/hooks/swr/usePost";
 import { IPendingPayment } from "@/types";
-
-// Constants
-const SOCKET_EVENTS = {
-  CONNECT: "connect",
-  ORDER_CREATED: "order:created",
-  JOIN_ROOM: "join:room",
-} as const;
-
-const ROLES = {
-  CASHIER: "cashier",
-} as const;
-
-// Payment Info Row Component
-const PaymentInfoRow = ({
-  icon: Icon,
-  label,
-  value,
-  valueClassName = "font-semibold",
-}: {
-  icon: any;
-  label: string;
-  value: React.ReactNode;
-  valueClassName?: string;
-}) => (
-  <div className="flex justify-between items-center">
-    <span className="text-gray-600 flex items-center gap-1">
-      <Icon className="w-4 h-4" />
-      {label}:
-    </span>
-    <span className={valueClassName}>{value}</span>
-  </div>
-);
+import CardRowInfo from "@/components/cashier-dashboard/CardRowInfo";
+import { SOCKET_EVENTS, ROLES } from "@/socket/socket.events";
 
 export default function CashierDashboard() {
   const { data, isLoading, isError, refetch } = useFetch(
@@ -210,12 +180,12 @@ export default function CashierDashboard() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <PaymentInfoRow
+                <CardRowInfo
                   icon={DollarSign}
                   label="Amount"
                   value={`$${payment.amount.toFixed(2)}`}
                 />
-                <PaymentInfoRow
+                <CardRowInfo
                   icon={CreditCard}
                   label="Method"
                   value={
@@ -227,7 +197,7 @@ export default function CashierDashboard() {
                     </Badge>
                   }
                 />
-                <PaymentInfoRow
+                <CardRowInfo
                   icon={Clock}
                   label="Waiting"
                   value={`${Math.floor(payment.waitingTime / 60)}m ${

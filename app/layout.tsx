@@ -46,7 +46,7 @@ export default function RootLayout({
           <TooltipProvider>
             <CartProvider>
               {children}
-              <Toaster />
+              <Toaster position="bottom-right" />
             </CartProvider>
           </TooltipProvider>
         </SocketProvider>

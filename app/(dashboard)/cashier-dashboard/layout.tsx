@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardSidebar } from "@/layout/cashier/DashboardSidebar";
 import { DashboardHeader } from "@/layout/cashier/DashboardHeader";
+import { DashboardSidebar } from "@/layout/cashier/DashboardSidebar";
+import LayoutClientWrapper from "./LayoutClientWrapper";
 // import { requireAuth } from "@/lib/requireAuth";
 
 export default async function CashierLayout({
@@ -17,7 +18,7 @@ export default async function CashierLayout({
         <div className="flex flex-1 flex-col overflow-hidden">
           <DashboardHeader />
           <main className="flex-1 overflow-auto bg-background p-4 lg:p-6">
-            {children}
+            <LayoutClientWrapper>{children}</LayoutClientWrapper>
           </main>
         </div>
       </div>

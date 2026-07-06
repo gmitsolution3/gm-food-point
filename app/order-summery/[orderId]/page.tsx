@@ -268,7 +268,6 @@ export default function OrderSummeryPage() {
               </div>
 
               {/* Status Progress Tracker */}
-              {/* Status Progress Tracker */}
               {!isCancelled && !isCompleted && (
                 <div className="mt-8">
                   <div className="relative flex justify-between items-start">
@@ -350,10 +349,29 @@ export default function OrderSummeryPage() {
                 </div>
               )}
 
-              {/* Countdown - Only show for active orders */}
+              {/* Ready Status Message */}
+              {currentStatus === "ready" && (
+                <div className="mt-6 rounded-2xl bg-green-50 p-6 text-center border-2 border-green-200">
+                  <Package className="h-12 w-12 text-green-600 mx-auto" />
+                  <h3 className="mt-3 text-lg font-extrabold text-green-700">
+                    Your Order is Ready!
+                  </h3>
+                  <p className="mt-2 text-sm text-green-600">
+                    Please proceed to the counter to collect your
+                    delicious food.
+                  </p>
+                  <p className="mt-1 text-xs text-green-500">
+                    Your order is waiting for you at the pickup
+                    counter.
+                  </p>
+                </div>
+              )}
+
+              {/* Countdown - Only show for active orders (not awaiting_payment, not ready, not cancelled, not completed) */}
               {!isCancelled &&
                 !isCompleted &&
-                currentStatus !== "awaiting_payment" && (
+                currentStatus !== "awaiting_payment" &&
+                currentStatus !== "ready" && (
                   <div className="mt-6">
                     <Countdown
                       estimatedCompletionAt={

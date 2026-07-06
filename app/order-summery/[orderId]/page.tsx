@@ -178,13 +178,6 @@ export default function OrderSummeryPage() {
     order.estimatedCompletionAt,
   );
 
-  const message =
-    order.orderType === "dine-in"
-      ? "We'll bring your order to your table shortly."
-      : order.orderType === "take-out"
-        ? "We'll have it ready at the counter soon."
-        : "Our courier will be on the way shortly.";
-
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}
@@ -275,9 +268,10 @@ export default function OrderSummeryPage() {
               </div>
 
               {/* Status Progress Tracker */}
+              {/* Status Progress Tracker */}
               {!isCancelled && !isCompleted && (
                 <div className="mt-8">
-                  <div className="relative flex justify-between">
+                  <div className="relative flex justify-between items-start">
                     {STATUS_FLOW.map((status, index) => {
                       const config = STATUS_CONFIG[status];
                       const isActive = currentStatus === status;
@@ -288,11 +282,11 @@ export default function OrderSummeryPage() {
                       return (
                         <div
                           key={status}
-                          className="flex flex-col items-center flex-1"
+                          className="flex flex-col items-center flex-1 relative"
                         >
-                          <div className="relative flex flex-col items-center">
+                          <div className="flex flex-col items-center">
                             <div
-                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all ${
+                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all z-10 ${
                                 isActive || isPast
                                   ? "border-primary bg-primary text-primary-foreground"
                                   : "border-muted bg-muted text-muted-foreground"

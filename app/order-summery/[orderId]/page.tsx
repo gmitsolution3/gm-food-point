@@ -1,49 +1,34 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import Countdown from "@/components/home/order/Countdown";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useFetchById } from "@/hooks/swr/useFetchById";
-import { useParams } from "next/navigation";
+import { IOrder } from "@/types";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  Clock,
+  Clock as ClockIcon,
+  CreditCard,
+  Loader2,
+  Package,
+  Utensils,
+  XCircle,
+} from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Clock, Loader2, ShieldCheck } from "lucide-react";
-import Countdown from "@/components/home/order/Countdown";
+import { useParams } from "next/navigation";
 
-interface IOrderItem {
-  menuId: string;
-  menuName: string;
-  categoryId: string;
-  categoryName: string;
-  originalUnitPrice: number;
-  effectiveUnitPrice: number;
-  quantity: number;
-  totalPrice: number;
-}
-
-interface IOrder {
-  _id: string;
-  orderNumber: string;
-  businessDate: string;
-  tableNumber: number;
-  createdBy: string;
-  orderType: "dine-in" | "take-out";
-  paymentMethod: string;
-  status: string;
-  items: IOrderItem[];
-  subtotal: number;
-  discount: number;
-  taxPercentage: number;
-  taxAmount: number;
-  serviceChargePercentage: number;
-  serviceChargeAmount: number;
-  grandTotal: number;
-  orderPreparationTime: number;
-  estimatedCompletionAt: string;
-  notes: string;
-  createdAt: string;
-  updatedAt: string;
-}
+type OrderStatus =
+  | "awaiting_payment"
+  | "queued"
+  | "cooking"
+  | "ready"
+  | "completed"
+  | "cancelled";
 
 interface IOrderResponse {
   success: boolean;
@@ -52,13 +37,86 @@ interface IOrderResponse {
   data: IOrder;
 }
 
+// Status configuration
+const STATUS_CONFIG: Record<
+  OrderStatus,
+  {
+    label: string;
+    icon: React.ElementType;
+    color: string;
+    bgColor: string;
+    message: string;
+    progress: number;
+  }
+> = {
+  awaiting_payment: {
+    label: "Awaiting Payment",
+    icon: CreditCard,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-100",
+    message:
+      "Please go to the counter and pay for your order to confirm and start preparation.",
+    progress: 0,
+  },
+  queued: {
+    label: "In Queue",
+    icon: ClockIcon,
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
+    message:
+      "Your order is in the queue and will be prepared shortly.",
+    progress: 25,
+  },
+  cooking: {
+    label: "Cooking",
+    icon: Utensils,
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
+    message: "Your order is being prepared with care by our chefs.",
+    progress: 50,
+  },
+  ready: {
+    label: "Ready for Pickup",
+    icon: Package,
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+    message: "Your order is ready! Please pick it up at the counter.",
+    progress: 100,
+  },
+  completed: {
+    label: "Completed",
+    icon: CheckCircle,
+    color: "text-green-700",
+    bgColor: "bg-green-100",
+    message:
+      "Your order has been completed. Thank you for dining with us!",
+    progress: 100,
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: XCircle,
+    color: "text-red-600",
+    bgColor: "bg-red-100",
+    message:
+      "Your order has been cancelled. Please contact the restaurant for more information.",
+    progress: 0,
+  },
+};
+
+// Status flow for tracking
+const STATUS_FLOW: OrderStatus[] = [
+  "awaiting_payment",
+  "queued",
+  "cooking",
+  "ready",
+  "completed",
+];
+
 export default function OrderSummeryPage() {
   const { orderId } = useParams();
 
-  const { data, isLoading, isError, refetch } = useFetchById<IOrderResponse>(
-    "/orders",
-    orderId as string,
-  );
+  const { data, isLoading, isError, refetch } =
+    useFetchById<IOrderResponse>("/orders", orderId as string);
 
   const order = data?.data;
 
@@ -67,7 +125,9 @@ export default function OrderSummeryPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading order...</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Loading order...
+          </p>
         </div>
       </div>
     );
@@ -78,7 +138,9 @@ export default function OrderSummeryPage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <h3 className="text-lg font-bold mb-2">Failed to load order</h3>
+          <h3 className="text-lg font-bold mb-2">
+            Failed to load order
+          </h3>
           <p className="text-muted-foreground">
             {isError ? "Please try again later" : "Order not found"}
           </p>
@@ -93,6 +155,15 @@ export default function OrderSummeryPage() {
     );
   }
 
+  const currentStatus = order?.status as OrderStatus;
+  const statusConfig =
+    STATUS_CONFIG[currentStatus] || STATUS_CONFIG.awaiting_payment;
+  const StatusIcon = statusConfig.icon;
+
+  // Check if order is cancelled
+  const isCancelled = currentStatus === "cancelled";
+  const isCompleted = currentStatus === "completed";
+
   const formatEstimatedTime = (dateString?: string) => {
     if (!dateString) return null;
     const date = new Date(dateString);
@@ -103,7 +174,9 @@ export default function OrderSummeryPage() {
     });
   };
 
-  const estimatedTimeFormatted = formatEstimatedTime(order.estimatedCompletionAt);
+  const estimatedTimeFormatted = formatEstimatedTime(
+    order.estimatedCompletionAt,
+  );
 
   const message =
     order.orderType === "dine-in"
@@ -116,25 +189,34 @@ export default function OrderSummeryPage() {
     <main className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-4 sm:px-6">
-          <Link
-            href="/menu"
-            aria-label="Back"
-            className="grid h-10 w-10 place-items-center rounded-full bg-muted hover:bg-secondary hover:text-secondary-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <Badge
-              variant="outline"
-              className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground border-0 px-0"
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/menu"
+              aria-label="Back"
+              className="grid h-10 w-10 place-items-center rounded-full bg-muted hover:bg-secondary hover:text-secondary-foreground"
             >
-              Order Status
-            </Badge>
-            <h1 className="text-xl font-extrabold leading-tight">
-              Order #{order.orderNumber}
-            </h1>
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <Badge
+                variant="outline"
+                className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground border-0 px-0"
+              >
+                Order Status
+              </Badge>
+              <h1 className="text-xl font-extrabold leading-tight">
+                Order #{order.orderNumber}
+              </h1>
+            </div>
           </div>
+          {/* Status Badge in Header */}
+          <Badge
+            className={`${statusConfig.bgColor} ${statusConfig.color} border-0 px-3 py-1.5 text-xs font-bold`}
+          >
+            <StatusIcon className="h-3.5 w-3.5 mr-1.5" />
+            {statusConfig.label}
+          </Badge>
         </div>
       </header>
 
@@ -148,56 +230,165 @@ export default function OrderSummeryPage() {
           <div
             aria-hidden
             className="h-2"
-            style={{ background: "var(--gradient-primary)" }}
+            style={{
+              background: isCancelled
+                ? "var(--destructive)"
+                : isCompleted
+                  ? "var(--green-500)"
+                  : "var(--gradient-primary)",
+            }}
           />
 
           <Card className="border-0 shadow-none bg-transparent">
             <CardContent className="p-6 sm:p-8">
-              {/* Success Icon */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 18,
-                  delay: 0.1,
-                }}
-                className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-yellow)]"
-              >
-                <ShieldCheck className="h-10 w-10" />
-              </motion.div>
+              {/* Status Section */}
+              <div className="text-center">
+                {/* Status Icon */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 18,
+                    delay: 0.1,
+                  }}
+                  className={`mx-auto grid h-20 w-20 place-items-center rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}
+                >
+                  <StatusIcon className="h-10 w-10" />
+                </motion.div>
 
-              <h1 className="mt-6 text-center text-3xl font-extrabold">
-                Order placed!
-              </h1>
-              <p className="mt-2 text-center text-sm text-muted-foreground">
-                {message}
-              </p>
-
-              {/* Countdown Section */}
-              <div className="mt-6">
-                <Countdown
-                  estimatedCompletionAt={order.estimatedCompletionAt}
-                  orderNumber={order.orderNumber}
-                />
+                <h2 className="mt-4 text-2xl font-extrabold">
+                  {statusConfig.label}
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {statusConfig.message}
+                </p>
+                {order.orderType && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {order.orderType === "dine-in"
+                      ? "Dine In"
+                      : "Take Out"}{" "}
+                    · Table {order.tableNumber}
+                  </p>
+                )}
               </div>
+
+              {/* Status Progress Tracker */}
+              {!isCancelled && !isCompleted && (
+                <div className="mt-8">
+                  <div className="relative flex justify-between">
+                    {STATUS_FLOW.map((status, index) => {
+                      const config = STATUS_CONFIG[status];
+                      const isActive = currentStatus === status;
+                      const isPast =
+                        STATUS_FLOW.indexOf(currentStatus) > index;
+                      const Icon = config.icon;
+
+                      return (
+                        <div
+                          key={status}
+                          className="flex flex-col items-center flex-1"
+                        >
+                          <div className="relative flex flex-col items-center">
+                            <div
+                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all ${
+                                isActive || isPast
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-muted bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <span
+                              className={`mt-2 text-[10px] font-medium text-center ${
+                                isActive
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {config.label}
+                            </span>
+                          </div>
+                          {/* Connector line */}
+                          {index < STATUS_FLOW.length - 1 && (
+                            <div
+                              className={`absolute top-5 left-[calc(50%+20px)] h-0.5 w-[calc(100%-40px)] ${
+                                STATUS_FLOW.indexOf(currentStatus) >
+                                index
+                                  ? "bg-primary"
+                                  : "bg-muted"
+                              }`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Cancelled Status */}
+              {isCancelled && (
+                <div className="mt-8 rounded-2xl bg-red-50 p-4 text-center">
+                  <AlertCircle className="h-8 w-8 text-red-600 mx-auto" />
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    This order has been cancelled.
+                  </p>
+                  <p className="text-xs text-red-500 mt-1">
+                    Please contact the restaurant for more
+                    information.
+                  </p>
+                </div>
+              )}
+
+              {/* Completed Status */}
+              {isCompleted && (
+                <div className="mt-8 rounded-2xl bg-green-50 p-4 text-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+                  <p className="mt-2 text-sm text-green-600 font-medium">
+                    Order completed successfully!
+                  </p>
+                  <p className="text-xs text-green-500 mt-1">
+                    Thank you for dining with us. We hope to see you
+                    again!
+                  </p>
+                </div>
+              )}
+
+              {/* Countdown - Only show for active orders */}
+              {!isCancelled &&
+                !isCompleted &&
+                currentStatus !== "awaiting_payment" && (
+                  <div className="mt-6">
+                    <Countdown
+                      estimatedCompletionAt={
+                        order.estimatedCompletionAt
+                      }
+                      orderNumber={order.orderNumber}
+                    />
+                  </div>
+                )}
 
               {/* Order Details */}
               <div className="mt-6 rounded-2xl bg-muted/60 p-4 text-left space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Order ID</span>
+                  <span className="text-muted-foreground">
+                    Order ID
+                  </span>
                   <span className="font-extrabold tracking-wider">
                     {order.orderNumber}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <span className="font-extrabold capitalize">
-                    <Badge variant="outline" className="capitalize">
-                      {order.status.replace("_", " ")}
-                    </Badge>
+                  <span className="text-muted-foreground">
+                    Status
                   </span>
+                  <Badge
+                    className={`${statusConfig.bgColor} ${statusConfig.color} border-0 text-xs font-bold`}
+                  >
+                    {statusConfig.label}
+                  </Badge>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total</span>
@@ -205,27 +396,32 @@ export default function OrderSummeryPage() {
                     ${order.grandTotal.toFixed(2)}
                   </span>
                 </div>
-                {order.orderPreparationTime && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      Prep Time
-                    </span>
-                    <span className="font-extrabold">
-                      ~{order.orderPreparationTime} mins
-                    </span>
-                  </div>
-                )}
-                {estimatedTimeFormatted && (
-                  <div className="flex justify-between text-sm border-t border-border/50 pt-2 mt-1">
-                    <span className="text-muted-foreground">
-                      Estimated Ready
-                    </span>
-                    <span className="font-extrabold text-primary">
-                      {estimatedTimeFormatted}
-                    </span>
-                  </div>
-                )}
+                {order.orderPreparationTime &&
+                  !isCancelled &&
+                  !isCompleted && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        Prep Time
+                      </span>
+                      <span className="font-extrabold">
+                        ~{order.orderPreparationTime} mins
+                      </span>
+                    </div>
+                  )}
+                {estimatedTimeFormatted &&
+                  !isCancelled &&
+                  !isCompleted &&
+                  currentStatus !== "awaiting_payment" && (
+                    <div className="flex justify-between text-sm border-t border-border/50 pt-2 mt-1">
+                      <span className="text-muted-foreground">
+                        Estimated Ready
+                      </span>
+                      <span className="font-extrabold text-primary">
+                        {estimatedTimeFormatted}
+                      </span>
+                    </div>
+                  )}
               </div>
 
               {/* Order Items */}
@@ -244,7 +440,8 @@ export default function OrderSummeryPage() {
                           {item.menuName}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Qty: {item.quantity} × ${item.effectiveUnitPrice.toFixed(2)}
+                          Qty: {item.quantity} × $
+                          {item.effectiveUnitPrice.toFixed(2)}
                         </div>
                       </div>
                       <div className="text-sm font-extrabold">
@@ -254,6 +451,21 @@ export default function OrderSummeryPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Payment Note for Awaiting Payment */}
+              {currentStatus === "awaiting_payment" && (
+                <div className="mt-4 rounded-2xl bg-yellow-50 p-4 text-center border-2 border-yellow-200">
+                  <CreditCard className="h-8 w-8 text-yellow-600 mx-auto" />
+                  <p className="mt-2 text-sm font-semibold text-yellow-800">
+                    Please proceed to the counter to complete your
+                    payment.
+                  </p>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Your order will be prepared once payment is
+                    confirmed.
+                  </p>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="mt-6 flex flex-col gap-2">

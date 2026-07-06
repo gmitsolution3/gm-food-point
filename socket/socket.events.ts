@@ -6,6 +6,7 @@ export const SOCKET_EVENTS = {
   ORDER_QUEUED: "order:queued",
   ORDER_COOKING: "order:cooking",
   ORDER_READY: "order:ready",
+  ORDER_COMPLETED: "order:completed",
 } as const;
 
 export const ROLES = {

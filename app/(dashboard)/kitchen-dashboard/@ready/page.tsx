@@ -41,6 +41,10 @@ export default function ReadyOrders() {
       refetch();
     };
 
+    const handleCompleteOrder = (newOrder: IKitchenOrder) => {
+      refetch();
+    };
+
     // If socket is already connected, join room immediately
     if (socket.connected) {
       joinRoom();
@@ -52,10 +56,14 @@ export default function ReadyOrders() {
     // Listen for order marked as ready
     socket.on(SOCKET_EVENTS.ORDER_READY, handleNewReadyOrder);
 
+    // Listen for order marked as complete
+    socket.on(SOCKET_EVENTS.ORDER_COMPLETED, handleCompleteOrder);
+
     // Cleanup listeners on unmount
     return () => {
       socket.off(SOCKET_EVENTS.CONNECT, handleConnect);
       socket.off(SOCKET_EVENTS.ORDER_READY, handleNewReadyOrder);
+      socket.off(SOCKET_EVENTS.ORDER_COMPLETED, handleCompleteOrder);
     };
   }, [socket, refetch]);
 

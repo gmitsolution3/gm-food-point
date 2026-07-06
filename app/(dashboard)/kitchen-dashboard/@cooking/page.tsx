@@ -8,22 +8,7 @@ import { useSocket } from "@/socket/socket-provider";
 import { notify } from "@/utils";
 import { ChefHat } from "lucide-react";
 import { useCallback, useEffect } from "react";
-
-interface OrderItem {
-  name: string;
-  quantity: number;
-}
-
-export interface Order {
-  orderId: string;
-  orderNumber: string;
-  tableNumber: number;
-  status: "queued" | "cooking" | "ready";
-  orderPreparationTime: number;
-  estimatedCompletionAt: string;
-  notes: string;
-  items: OrderItem[];
-}
+import {IKitchenOrder} from "@/types";
 
 export default function CookingOrders() {
   const socket = useSocket();
@@ -50,7 +35,7 @@ export default function CookingOrders() {
     };
 
     // Handle new cooking order
-    const handleCookingCookingOrder = (newOrder: any) => {
+    const handleCookingCookingOrder = (newOrder: IKitchenOrder) => {
       notify.success(`Order ${newOrder.orderNumber} is now cooking!`);
       refetch();
     };
@@ -75,7 +60,7 @@ export default function CookingOrders() {
 
   // Handle mark as ready action
   const handleMarkReady = useCallback(
-    async (order: Order) => {
+    async (order: IKitchenOrder) => {
       try {
         const res = await axiosInstance.patch(
           `/orders/${order.orderId}/ready`,
@@ -105,7 +90,7 @@ export default function CookingOrders() {
     );
   }
 
-  const orders: Order[] = data?.data || [];
+  const orders: IKitchenOrder[] = data?.data || [];
 
   return (
     <OrderColumn

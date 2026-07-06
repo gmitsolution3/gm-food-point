@@ -32,3 +32,19 @@ export interface IOrder {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface IKitchenOrderItem {
+  name: string;
+  quantity: number;
+}
+
+export interface IKitchenOrder {
+  orderId: string;
+  orderNumber: string;
+  tableNumber: number;
+  status: "queued" | "cooking" | "ready";
+  orderPreparationTime: number;
+  estimatedCompletionAt: string;
+  notes: string;
+  items: IKitchenOrderItem[];
+}

@@ -5,25 +5,10 @@ import { OrderColumn } from "@/components/kitchen-dashboard/OrderColumn";
 import { useFetch } from "@/hooks/swr/useFetch";
 import { axiosInstance } from "@/lib/axios";
 import { useSocket } from "@/socket/socket-provider";
+import { IKitchenOrder } from "@/types";
 import { notify } from "@/utils";
 import { Clock } from "lucide-react";
 import { useCallback, useEffect } from "react";
-
-interface OrderItem {
-  name: string;
-  quantity: number;
-}
-
-export interface Order {
-  orderId: string;
-  orderNumber: string;
-  tableNumber: number;
-  status: "queued" | "cooking" | "ready";
-  orderPreparationTime: number;
-  estimatedCompletionAt: string;
-  notes: string;
-  items: OrderItem[];
-}
 
 export default function QueuedOrders() {
   const socket = useSocket();
@@ -50,7 +35,7 @@ export default function QueuedOrders() {
     };
 
     // Handle new order
-    const handleNewOrder = (newOrder: any) => {
+    const handleNewOrder = (newOrder: IKitchenOrder) => {
       notify.success(`New order ${newOrder.orderNumber} received!`);
       refetch();
     };
@@ -75,7 +60,7 @@ export default function QueuedOrders() {
 
   // Handle start cooking action
   const handleStartCooking = useCallback(
-    async (order: Order) => {
+    async (order: IKitchenOrder) => {
       try {
         const res = await axiosInstance.patch(
           `/orders/${order.orderId}/start`,
@@ -105,7 +90,7 @@ export default function QueuedOrders() {
     );
   }
 
-  const orders: Order[] = data?.data || [];
+  const orders: IKitchenOrder[] = data?.data || [];
 
   return (
     <OrderColumn

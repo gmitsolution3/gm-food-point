@@ -149,7 +149,7 @@ export function OrderCard({
         </div>
       </CardContent>
 
-      <CardFooter className="pt-2">
+      {variant !== "ready" && <CardFooter className="pt-2">
         <Button
           onClick={() => onAction(order)}
           className={`w-full ${actionColor} text-white transition-all duration-200`}
@@ -157,7 +157,7 @@ export function OrderCard({
           <CheckCircle2 className="mr-2 h-4 w-4" />
           {actionLabel}
         </Button>
-      </CardFooter>
+      </CardFooter>}
     </Card>
   );
 }

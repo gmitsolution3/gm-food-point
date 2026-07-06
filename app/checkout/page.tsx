@@ -62,7 +62,6 @@ export default function CheckoutPage() {
     data: orderData,
   } = usePost<IOrderResponse>("/orders");
 
-  const router = useRouter();
   const {
     items,
     subtotal,
@@ -80,6 +79,8 @@ export default function CheckoutPage() {
     orderType === "dine-in" ? "dine-in" : "take-out";
 
   const [done, setDone] = useState<null | IOrder>(null);
+
+  const router = useRouter();
 
   const {
     control,
@@ -100,7 +101,6 @@ export default function CheckoutPage() {
     },
   });
 
-  const formValues = watch();
   const currentOrderType = watch("orderType");
 
   const grandTotal = total;
@@ -124,6 +124,7 @@ export default function CheckoutPage() {
     console.log(response);
 
     if (response?.success) {
+      router.push(`/order-summery/${response?.data?.order?._id}`);
       setDone(response?.data?.order);
       clear();
     }

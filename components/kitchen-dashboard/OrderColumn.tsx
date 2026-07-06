@@ -1,6 +1,7 @@
 // components/kitchen/OrderColumn.tsx
-import {Badge} from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Order, OrderCard } from "./OrderCard";
+import OrderCardLoader from "./OrderCardLoader";
 
 interface OrderColumnProps {
   title: string;
@@ -10,6 +11,8 @@ interface OrderColumnProps {
   actionColor?: string;
   variant: "queued" | "cooking" | "ready";
   icon?: React.ReactNode;
+  isLoading?: boolean;
+  skeletonCount?: number;
 }
 
 export function OrderColumn({
@@ -20,6 +23,8 @@ export function OrderColumn({
   actionColor,
   variant,
   icon,
+  isLoading = false,
+  skeletonCount = 3,
 }: OrderColumnProps) {
   return (
     <div className="flex flex-col h-full">
@@ -28,14 +33,22 @@ export function OrderColumn({
         <h2 className="text-lg font-semibold text-gray-800">
           {title}
         </h2>
-        <Badge variant="outline" className="ml-auto bg-gray-200 text-gray-700 hover:bg-gray-200">
-          {orders.length}
+        <Badge
+          variant="outline"
+          className="ml-auto bg-gray-200 text-gray-700 hover:bg-gray-200"
+        >
+          {isLoading ? "..." : orders.length}
         </Badge>
       </div>
       <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-        {orders.length === 0 ? (
+        {isLoading ? (
+          // Show skeleton cards while loading
+          Array.from({ length: skeletonCount }).map((_, index) => (
+            <OrderCardLoader key={index} variant={variant} />
+          ))
+        ) : orders.length === 0 ? (
           <div className="text-center py-8 text-gray-400 text-sm">
-            No orders in this column
+            No orders is {variant} at the moment.
           </div>
         ) : (
           orders.map((order) => (

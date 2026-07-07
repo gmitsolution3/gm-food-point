@@ -25,6 +25,8 @@ import { useSession } from "@/lib/auth-context";
 import { notify } from "@/utils";
 import Image from "next/image";
 
+import { ROLE_ROUTE } from "@/utils/role-route";
+
 // Validation schema
 const loginSchema = z.object({
   email: z
@@ -82,11 +84,7 @@ export default function Login() {
         const user = res.data.user;
         notify.success("Log in successful!");
 
-        if (user?.role === "user") {
-          router.push(from || "/dashboard");
-        } else {
-          router.push(from || "/admin-dashboard");
-        }
+        router.push(from || ROLE_ROUTE[user?.role] || "/")
       } else {
         setServerError(res?.error?.message || "Login failed");
         notify.error(res?.error?.message || "Login failed");

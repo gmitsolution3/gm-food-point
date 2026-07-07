@@ -84,7 +84,11 @@ export default function Login() {
         const user = res.data.user;
         notify.success("Log in successful!");
 
-        router.push(from || ROLE_ROUTE[user?.role] || "/")
+        router.push(
+          from ||
+            ROLE_ROUTE[user?.role as keyof typeof ROLE_ROUTE] ||
+            "/",
+        );
       } else {
         setServerError(res?.error?.message || "Login failed");
         notify.error(res?.error?.message || "Login failed");

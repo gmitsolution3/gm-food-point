@@ -77,7 +77,7 @@ export function DashboardSidebar() {
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       href={item.url}
-                      exact={item.url === "/cashier-dashboard"}
+                      exact={item.url === "/manager-dashboard"}
                       className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-black transition-colors hover:bg-primary hover:text-white"
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
@@ -120,7 +120,7 @@ export function DashboardSidebar() {
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={"user?.image"} />
             <AvatarFallback className="bg-primary text-white">
-              {getUserInitials("user?.name" || "Cashier")}
+              {getUserInitials(user?.name || "Manager")}
             </AvatarFallback>
           </Avatar>
           {!isCollapsed && (

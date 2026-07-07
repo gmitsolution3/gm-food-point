@@ -1,7 +1,6 @@
-import { KitchenProvider } from "./kitchen-context";
+import { requireAuth } from "@/lib/requireAuth";
 
-// app/kitchen/layout.tsx
-export default function KitchenLayout({
+export default async function KitchenLayout({
   queued,
   cooking,
   ready,
@@ -10,8 +9,10 @@ export default function KitchenLayout({
   cooking: React.ReactNode;
   ready: React.ReactNode;
 }) {
+  await requireAuth(["chief"])
+
   return (
-    <KitchenProvider>
+    <>
       <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
         {/* Fixed Header */}
         <header className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
@@ -100,6 +101,6 @@ export default function KitchenLayout({
           </div>
         </div>
       </div>
-    </KitchenProvider>
+    </>
   );
 }

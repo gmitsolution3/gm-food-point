@@ -1,15 +1,14 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardHeader } from "@/layout/cashier/DashboardHeader";
-import { DashboardSidebar } from "@/layout/cashier/DashboardSidebar";
-import LayoutClientWrapper from "./LayoutClientWrapper";
+import { DashboardSidebar } from "@/layout/manager/DashboardSidebar";
+import { DashboardHeader } from "@/layout/manager/DashboardHeader";
 import { requireAuth } from "@/lib/requireAuth";
 
-export default async function CashierLayout({
+export default async function ManagerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireAuth(["cashier"]);
+  await requireAuth(["manager"]);
 
   return (
     <SidebarProvider>
@@ -18,7 +17,7 @@ export default async function CashierLayout({
         <div className="flex flex-1 flex-col overflow-hidden">
           <DashboardHeader />
           <main className="flex-1 overflow-auto bg-background p-4 lg:p-6">
-            <LayoutClientWrapper>{children}</LayoutClientWrapper>
+            {children}
           </main>
         </div>
       </div>

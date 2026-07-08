@@ -4,4 +4,6 @@ export * from "./menu-item.type";
 export * from "./meta.type";
 export * from "./order.type";
 export * from "./payment.type";
+export * from "./user.type";
+export * from "./pagination.type";
 export * from "./settings.type";

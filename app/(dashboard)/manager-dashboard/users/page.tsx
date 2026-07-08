@@ -2,6 +2,7 @@
 
 import UsersEmpty from "@/components/manager-dashboard/users/UsersEmpty";
 import ViewUserModal from "@/components/manager-dashboard/users/ViewUserModal";
+import UpdateRoleModal from "@/components/manager-dashboard/users/UpdateRoleModal";
 import TableLoader from "@/components/TableLoader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -31,9 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useFetch } from "@/hooks/swr/useFetch";
-import { useDebounce } from "@/hooks/useDebounce";
-import { IPagination, IUser } from "@/types";
+import { IUser, IPagination } from "@/types";
 import { formatDate } from "@/utils";
 import {
   ColumnDef,
@@ -44,6 +44,7 @@ import {
 import {
   Calendar,
   CheckCircle,
+  Edit,
   Eye,
   Filter,
   MoreHorizontal,
@@ -52,7 +53,8 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ApiResponse {
   data: {
@@ -66,18 +68,17 @@ export default function AdminUsersPage() {
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("");
-  const [filterEmailVerified, setFilterEmailVerified] =
-    useState<string>("");
+  const [filterEmailVerified, setFilterEmailVerified] = useState<string>("");
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const { data, isLoading, refetch } = useFetch<ApiResponse>(
-    `/users?page=${currentPage}&limit=${limit}${debouncedSearch ? `&searchTerm=${debouncedSearch}` : ""}${filterRole ? `&role=${filterRole}` : ""}${filterEmailVerified ? `&emailVerified=${filterEmailVerified}` : ""}`,
+    `/users?page=${currentPage}&limit=${limit}${debouncedSearch ? `&searchTerm=${debouncedSearch}` : ""}${filterRole ? `&role=${filterRole}` : ""}${filterEmailVerified ? `&emailVerified=${filterEmailVerified}` : ""}`
   );
 
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<IUser | null>(
-    null,
-  );
+  const [isUpdateRoleModalOpen, setIsUpdateRoleModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<IUser | null>(null);
+  const [itemToUpdateRole, setItemToUpdateRole] = useState<IUser | null>(null);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -86,6 +87,11 @@ export default function AdminUsersPage() {
   const handleView = (item: IUser) => {
     setSelectedItem(item);
     setIsDetailModalOpen(true);
+  };
+
+  const handleUpdateRole = (item: IUser) => {
+    setItemToUpdateRole(item);
+    setIsUpdateRoleModalOpen(true);
   };
 
   const handleRoleFilterChange = (value: string) => {
@@ -155,10 +161,7 @@ export default function AdminUsersPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           {row.original.emailVerified ? (
-            <Badge
-              variant="default"
-              className="gap-1 bg-green-500 hover:bg-green-600"
-            >
+            <Badge variant="default" className="gap-1 bg-green-500 hover:bg-green-600">
               <CheckCircle className="h-3 w-3" />
               Verified
             </Badge>
@@ -211,7 +214,7 @@ export default function AdminUsersPage() {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -220,6 +223,13 @@ export default function AdminUsersPage() {
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => handleUpdateRole(row.original)}
+                className="hover:text-white! hover:bg-primary!"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Update Role
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -250,8 +260,7 @@ export default function AdminUsersPage() {
   const currentPageNum = meta?.page || 1;
 
   const isDataAvailable = (data?.data?.data?.length as number) > 0;
-  const hasActiveFilters =
-    searchTerm || filterRole || filterEmailVerified;
+  const hasActiveFilters = searchTerm || filterRole || filterEmailVerified;
 
   return (
     <section className="container mx-auto px-5 lg:px-0 py-8">
@@ -263,8 +272,7 @@ export default function AdminUsersPage() {
           </p>
           {meta && (
             <p className="text-sm text-muted-foreground mt-1">
-              Showing {data?.data?.data?.length || 0} of {meta.total}{" "}
-              users
+              Showing {data?.data?.data?.length || 0} of {meta.total} users
             </p>
           )}
         </div>
@@ -293,10 +301,7 @@ export default function AdminUsersPage() {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">Filters:</span>
           </div>
-          <Select
-            value={filterRole}
-            onValueChange={handleRoleFilterChange}
-          >
+          <Select value={filterRole} onValueChange={handleRoleFilterChange}>
             <SelectTrigger className="w-[150px] h-9">
               <SelectValue placeholder="All roles" />
             </SelectTrigger>
@@ -307,10 +312,7 @@ export default function AdminUsersPage() {
               <SelectItem value="kitchen">Kitchen</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={filterEmailVerified}
-            onValueChange={handleEmailVerifiedFilterChange}
-          >
+          <Select value={filterEmailVerified} onValueChange={handleEmailVerifiedFilterChange}>
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Email status" />
             </SelectTrigger>
@@ -489,6 +491,12 @@ export default function AdminUsersPage() {
         isModalOpen={isDetailModalOpen}
         setIsModalOpen={setIsDetailModalOpen}
         user={selectedItem}
+      />
+      <UpdateRoleModal
+        isModalOpen={isUpdateRoleModalOpen}
+        setIsModalOpen={setIsUpdateRoleModalOpen}
+        user={itemToUpdateRole}
+        onSuccess={refetch}
       />
     </section>
   );

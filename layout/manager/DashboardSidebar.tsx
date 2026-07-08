@@ -118,7 +118,7 @@ export function DashboardSidebar() {
       <SidebarFooter className="border-t p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarImage src={"user?.image"} />
+            <AvatarImage src={user?.image} />
             <AvatarFallback className="bg-primary text-white">
               {getUserInitials(user?.name || "Manager")}
             </AvatarFallback>

@@ -1,8 +1,9 @@
 "use client";
 
 import ProfileLeftCard from "@/components/manager-dashboard/profile/ProfileLeftCard";
-import ProfileLoader from "@/components/manager-dashboard/profile/ProfileLoader";
 import ProfileRightCard from "@/components/manager-dashboard/profile/ProfileRightCard";
+import ProfileLoader from "@/components/manager-dashboard/profile/ProfileLoader";
+import ProfileImageDialog from "@/components/manager-dashboard/profile/ProfileImageDialog";
 import {
   Card,
   CardDescription,
@@ -110,7 +111,6 @@ export default function ProfilePage() {
                 user={user}
                 form={form}
                 isEditing={isEditing}
-                isImageDialogOpen={isImageDialogOpen}
                 setIsImageDialogOpen={setIsImageDialogOpen}
               />
             </div>
@@ -130,6 +130,13 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Image Upload Dialog */}
+      <ProfileImageDialog
+        isOpen={isImageDialogOpen}
+        setIsOpen={setIsImageDialogOpen}
+        form={form}
+      />
     </Suspense>
   );
 }

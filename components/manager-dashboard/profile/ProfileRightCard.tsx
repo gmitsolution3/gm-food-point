@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "@/form-schema/ProfileFormSchema";
 import { User, Save, X } from "lucide-react";
-import { IUser } from "@/types";
+import {IUser} from "@/types";
 
 interface ProfileRightCardProps {
   user: IUser;

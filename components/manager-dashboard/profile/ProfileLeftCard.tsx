@@ -4,16 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Shield, Edit } from "lucide-react";
+import { Mail, Edit } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "@/form-schema/ProfileFormSchema";
-import { IUser } from "@/types";
+import {IUser} from "@/types";
 
 interface ProfileLeftCardProps {
   user: IUser;
   form: UseFormReturn<ProfileFormValues>;
   isEditing: boolean;
-  isImageDialogOpen: boolean;
   setIsImageDialogOpen: (open: boolean) => void;
 }
 
@@ -21,7 +20,6 @@ export default function ProfileLeftCard({
   user,
   form,
   isEditing,
-  isImageDialogOpen,
   setIsImageDialogOpen,
 }: ProfileLeftCardProps) {
   const getRoleBadge = (role: string) => {
@@ -36,6 +34,8 @@ export default function ProfileLeftCard({
     return roleColors[role?.toLowerCase()] || roleColors.user;
   };
 
+  const imageSrc = form.watch("image") || user.image || "";
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -43,10 +43,7 @@ export default function ProfileLeftCard({
           {/* Avatar */}
           <div className="relative">
             <Avatar className="w-24 h-24 border-4 border-primary/10">
-              <AvatarImage
-                src={form.watch("image") || user.image || ""}
-                alt={user.name}
-              />
+              <AvatarImage src={imageSrc} alt={user.name} />
               <AvatarFallback className="text-2xl">
                 {user.name?.charAt(0) || "U"}
               </AvatarFallback>

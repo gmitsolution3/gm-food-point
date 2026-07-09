@@ -120,7 +120,7 @@ export function DashboardSidebar() {
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={"user?.image"} />
             <AvatarFallback className="bg-primary text-white">
-              {getUserInitials("user?.name" || "Cashier")}
+              {getUserInitials(user?.name || "Cashier")}
             </AvatarFallback>
           </Avatar>
           {!isCollapsed && (

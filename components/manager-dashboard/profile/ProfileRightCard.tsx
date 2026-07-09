@@ -1,13 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "@/form-schema/ProfileFormSchema";
-import { User, Save, X } from "lucide-react";
-import {IUser} from "@/types";
+import { IUser } from "@/types";
+import { Save, User, X } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
 
 interface ProfileRightCardProps {
   user: IUser;
@@ -44,7 +49,10 @@ export default function ProfileRightCard({
           </p>
         </div>
         {!isEditing && (
-          <Button variant="outline" onClick={() => setIsEditing(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing(true)}
+          >
             <User className="h-4 w-4 mr-2" />
             Edit Profile
           </Button>
@@ -63,7 +71,9 @@ export default function ProfileRightCard({
                 disabled={!isEditing || isLoading}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
               )}
             </div>
 
@@ -79,10 +89,13 @@ export default function ProfileRightCard({
                 className="bg-muted/50 cursor-not-allowed"
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Email cannot be changed. Contact support for assistance.
+                Email cannot be changed. Contact support for
+                assistance.
               </p>
             </div>
 
@@ -110,7 +123,6 @@ export default function ProfileRightCard({
                     name: user.name,
                     email: user.email,
                     image: user.image || "",
-                    imagePublicId: user.imagePublicId || "",
                   });
                 }}
                 disabled={isLoading}
@@ -118,7 +130,11 @@ export default function ProfileRightCard({
                 <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-white">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="text-white"
+              >
                 <Save className="h-4 w-4 mr-2" />
                 {isLoading ? "Saving..." : "Save Changes"}
               </Button>

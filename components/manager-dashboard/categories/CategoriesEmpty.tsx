@@ -1,0 +1,34 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+
+interface CategoriesEmptyProps {
+  onCreateClick: () => void;
+  isDeleting?: boolean;
+}
+
+export default function CategoriesEmpty({
+  onCreateClick,
+  isDeleting = false,
+}: CategoriesEmptyProps) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-12">
+      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+        <span className="text-2xl">🏷️</span>
+      </div>
+      <div className="text-center">
+        <h3 className="font-semibold text-lg">No categories found</h3>
+        <p className="text-sm text-muted-foreground mt-1 max-w-md">
+          Get started by adding your first category.
+        </p>
+      </div>
+      <Button
+        variant="outline"
+        onClick={onCreateClick}
+        disabled={isDeleting}
+      >
+        Add Category
+      </Button>
+    </div>
+  );
+}

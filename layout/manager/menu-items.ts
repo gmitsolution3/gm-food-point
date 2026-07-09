@@ -7,7 +7,8 @@ import {
   List,
   Earth,
   Banknote,
-  Plane
+  Plane,
+  Hamburger
 } from "lucide-react";
 
 const baseDashboardUrl = "/manager-dashboard";
@@ -19,7 +20,16 @@ export const mainMenuItems = [
     url: dashboardMenu.defineUrl("/"),
     icon: LayoutDashboard,
   },
-  
+  {
+    title: "categories",
+    url: dashboardMenu.defineUrl("/categories"),
+    icon: List,
+  },
+  {
+    title: "menus",
+    url: dashboardMenu.defineUrl("/menus"),
+    icon: Hamburger,
+  },
 ];
 
 export const settingsItems = [

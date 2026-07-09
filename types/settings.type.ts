@@ -12,6 +12,7 @@ export interface ISettings {
   isServiceChargeEnabled: boolean;
   orderNumberPrefix: string;
   isRestaurantOpen: boolean;
+  paymentTimeoutMinutes: number,
   createdAt: string;
   updatedAt: string;
 }

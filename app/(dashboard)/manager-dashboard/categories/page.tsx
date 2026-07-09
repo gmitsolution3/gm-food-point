@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFetch } from "@/hooks/swr/useFetch";
+import { useDelete } from "@/hooks/swr/useDelete";
 import { ICategory, IPagination } from "@/types";
 import { formatDate } from "@/utils";
 import {
@@ -49,9 +50,11 @@ import {
   Filter,
   MoreHorizontal,
   Tag,
+  Trash2,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 interface ApiResponse {
   data: ICategory[];
@@ -65,6 +68,13 @@ export default function AdminCategoriesPage() {
 
   const { data, isLoading, refetch } = useFetch<ApiResponse>(
     `/categories?page=${currentPage}&limit=${limit}${filterStatus ? `&isActive=${filterStatus}` : ""}`,
+  );
+
+  const { mutate: deleteCategory, isLoading: isDeleting } = useDelete(
+    "/categories",
+    {
+      revalidateKey: "/categories",
+    },
   );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -85,6 +95,52 @@ export default function AdminCategoriesPage() {
   const handleEdit = (item: ICategory) => {
     setItemToEdit(item);
     setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `You won't be able to revert deleting category "${name}"!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#232156",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          Swal.fire({
+            title: "Deleting...",
+            text: "Please wait",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
+          await deleteCategory(id);
+
+          Swal.fire({
+            title: "Deleted!",
+            text: `Category "${name}" has been deleted successfully.`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
+          refetch();
+        } catch (error: any) {
+          Swal.fire({
+            title: "Error",
+            text:
+              error.response?.data?.message ||
+              "Failed to delete category",
+            icon: "error",
+          });
+        }
+      }
+    });
   };
 
   const handleFilterChange = (value: string) => {
@@ -183,6 +239,7 @@ export default function AdminCategoriesPage() {
             size="icon"
             className="h-8 w-8 hover:text-primary !p-0"
             onClick={() => handleView(row.original)}
+            disabled={isDeleting}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -192,6 +249,7 @@ export default function AdminCategoriesPage() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 hover:text-primary !p-0"
+                disabled={isDeleting}
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -202,9 +260,18 @@ export default function AdminCategoriesPage() {
               <DropdownMenuItem
                 onSelect={() => handleEdit(row.original)}
                 className="hover:text-white! hover:bg-primary!"
+                disabled={isDeleting}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDelete(row.original._id, row.original.name)}
+                className="text-destructive hover:text-white! hover:bg-primary!"
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isDeleting ? "Deleting..." : "Delete"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

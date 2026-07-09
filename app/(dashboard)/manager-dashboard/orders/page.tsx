@@ -1,11 +1,12 @@
 "use client";
 
-import ViewOrderModal from "@/components/manager-dashboard/orders/ViewOrderModal";
 import OrdersEmpty from "@/components/manager-dashboard/orders/OrdersEmpty";
+import ViewOrderModal from "@/components/manager-dashboard/orders/ViewOrderModal";
 import TableLoader from "@/components/TableLoader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -30,8 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { useFetch } from "@/hooks/swr/useFetch";
+import { useDebounce } from "@/hooks/useDebounce";
 import { IOrder, IPagination } from "@/types";
 import { formatDate } from "@/utils";
 import {
@@ -41,30 +43,31 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AlertCircle,
   Calendar,
+  CheckCircle,
+  Clock,
+  Coffee,
   Eye,
+  Filter,
   MoreHorizontal,
   Search,
   X,
-  Filter,
-  Clock,
-  CheckCircle,
   XCircle,
-  AlertCircle,
-  Coffee,
-  Package,
-  DollarSign,
-  Users,
-  CreditCard,
-  Utensils,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useEffect, useState } from "react";
 
 interface ApiResponse {
   data: IOrder[];
   meta: IPagination;
 }
+
+const formatDateToAPI = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 export default function AdminOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,20 +75,36 @@ export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterOrderType, setFilterOrderType] = useState<string>("");
-  const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("");
-  const [filterBusinessDate, setFilterBusinessDate] = useState<string>("");
+  const [filterPaymentMethod, setFilterPaymentMethod] =
+    useState<string>("");
+  const [filterBusinessDate, setFilterBusinessDate] = useState<
+    Date | undefined
+  >(undefined);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
+  // Format date for API
+  const formattedBusinessDate = filterBusinessDate
+    ? formatDateToAPI(filterBusinessDate)
+    : "";
+
   const { data, isLoading } = useFetch<ApiResponse>(
-    `/orders?page=${currentPage}&limit=${limit}${debouncedSearch ? `&searchTerm=${debouncedSearch}` : ""}${filterStatus ? `&status=${filterStatus}` : ""}${filterOrderType ? `&orderType=${filterOrderType}` : ""}${filterPaymentMethod ? `&paymentMethod=${filterPaymentMethod}` : ""}${filterBusinessDate ? `&businessDate=${filterBusinessDate}` : ""}`
+    `/orders?page=${currentPage}&limit=${limit}${debouncedSearch ? `&searchTerm=${debouncedSearch}` : ""}${filterStatus ? `&status=${filterStatus}` : ""}${filterOrderType ? `&orderType=${filterOrderType}` : ""}${filterPaymentMethod ? `&paymentMethod=${filterPaymentMethod}` : ""}${formattedBusinessDate ? `&businessDate=${formattedBusinessDate}` : ""}`,
   );
 
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<IOrder | null>(null);
+  const [selectedItem, setSelectedItem] = useState<IOrder | null>(
+    null,
+  );
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, filterStatus, filterOrderType, filterPaymentMethod, filterBusinessDate]);
+  }, [
+    debouncedSearch,
+    filterStatus,
+    filterOrderType,
+    filterPaymentMethod,
+    filterBusinessDate,
+  ]);
 
   const handleView = (item: IOrder) => {
     setSelectedItem(item);
@@ -107,8 +126,8 @@ export default function AdminOrdersPage() {
     setCurrentPage(1);
   };
 
-  const handleBusinessDateChange = (value: string) => {
-    setFilterBusinessDate(value);
+  const handleBusinessDateChange = (date: Date | undefined) => {
+    setFilterBusinessDate(date);
     setCurrentPage(1);
   };
 
@@ -117,7 +136,7 @@ export default function AdminOrdersPage() {
     setFilterStatus("");
     setFilterOrderType("");
     setFilterPaymentMethod("");
-    setFilterBusinessDate("");
+    setFilterBusinessDate(undefined);
     setCurrentPage(1);
   };
 
@@ -166,11 +185,15 @@ export default function AdminOrdersPage() {
       },
     };
 
-    const statusInfo = statusMap[status.toLowerCase()] || statusMap.queued;
+    const statusInfo =
+      statusMap[status.toLowerCase()] || statusMap.queued;
     const Icon = statusInfo.icon;
 
     return (
-      <Badge variant={statusInfo.variant} className="gap-1 capitalize">
+      <Badge
+        variant={statusInfo.variant}
+        className="gap-1 capitalize"
+      >
         <Icon className="h-3 w-3" />
         {statusInfo.label}
       </Badge>
@@ -205,7 +228,9 @@ export default function AdminOrdersPage() {
             {row.original.items.length} item(s)
           </div>
           <div className="text-xs text-muted-foreground truncate max-w-[150px]">
-            {row.original.items.map(item => item.menuName).join(", ")}
+            {row.original.items
+              .map((item) => item.menuName)
+              .join(", ")}
           </div>
         </div>
       ),
@@ -241,9 +266,7 @@ export default function AdminOrdersPage() {
       header: "Business Date",
       size: 130,
       cell: ({ row }) => (
-        <div className="text-sm">
-          {row.original.businessDate}
-        </div>
+        <div className="text-sm">{row.original.businessDate}</div>
       ),
     },
     {
@@ -325,7 +348,12 @@ export default function AdminOrdersPage() {
   const currentPageNum = meta?.page || 1;
 
   const isDataAvailable = (data?.data?.length as number) > 0;
-  const hasActiveFilters = searchTerm || filterStatus || filterOrderType || filterPaymentMethod || filterBusinessDate;
+  const hasActiveFilters =
+    searchTerm ||
+    filterStatus ||
+    filterOrderType ||
+    filterPaymentMethod ||
+    filterBusinessDate;
 
   return (
     <section className="container mx-auto px-5 lg:px-0 py-8">
@@ -343,9 +371,9 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
+      {/* Search and Date Filter Row */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+        <div className="relative flex-1 max-w-sm w-full sm:w-auto">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by order number..."
@@ -363,72 +391,86 @@ export default function AdminOrdersPage() {
           )}
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 flex-1">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium whitespace-nowrap">Filters:</span>
-          </div>
-
-          {/* Status Filter */}
-          <Select value={filterStatus} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-[150px] h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
-              <SelectItem value="queued">Queued</SelectItem>
-              <SelectItem value="cooking">Cooking</SelectItem>
-              <SelectItem value="ready">Ready</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Order Type Filter */}
-          <Select value={filterOrderType} onValueChange={handleOrderTypeChange}>
-            <SelectTrigger className="w-[130px] h-9">
-              <SelectValue placeholder="Order Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              <SelectItem value="dine-in">Dine-in</SelectItem>
-              <SelectItem value="take-out">Take-out</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Payment Method Filter */}
-          <Select value={filterPaymentMethod} onValueChange={handlePaymentMethodChange}>
-            <SelectTrigger className="w-[130px] h-9">
-              <SelectValue placeholder="Payment" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All methods</SelectItem>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="online">Online</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Business Date Filter */}
-          <Input
-            type="date"
+        <div className="flex items-center gap-2">
+          <DatePicker
             value={filterBusinessDate}
-            onChange={(e) => handleBusinessDateChange(e.target.value)}
-            className="w-[160px] h-9"
+            onChange={handleBusinessDateChange}
+            placeholder="Filter by date"
+            className="w-[180px]"
           />
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="h-9 px-3 text-muted-foreground hover:text-foreground"
-            >
-              Clear all
-            </Button>
-          )}
         </div>
+
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-9 px-3 text-muted-foreground hover:text-foreground"
+          >
+            Clear all
+          </Button>
+        )}
+      </div>
+
+      {/* Filter Row - Right Aligned */}
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-6">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium whitespace-nowrap">
+            Filters:
+          </span>
+        </div>
+
+        {/* Status Filter */}
+        <Select
+          value={filterStatus}
+          onValueChange={handleFilterChange}
+        >
+          <SelectTrigger className="w-[150px] h-9">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All status</SelectItem>
+            <SelectItem value="awaiting_payment">
+              Awaiting Payment
+            </SelectItem>
+            <SelectItem value="queued">Queued</SelectItem>
+            <SelectItem value="cooking">Cooking</SelectItem>
+            <SelectItem value="ready">Ready</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Order Type Filter */}
+        <Select
+          value={filterOrderType}
+          onValueChange={handleOrderTypeChange}
+        >
+          <SelectTrigger className="w-[130px] h-9">
+            <SelectValue placeholder="Order Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="dine-in">Dine-in</SelectItem>
+            <SelectItem value="take-out">Take-out</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Payment Method Filter */}
+        <Select
+          value={filterPaymentMethod}
+          onValueChange={handlePaymentMethodChange}
+        >
+          <SelectTrigger className="w-[130px] h-9">
+            <SelectValue placeholder="Payment" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All methods</SelectItem>
+            <SelectItem value="cash">Cash</SelectItem>
+            <SelectItem value="online">Online</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {!isDataAvailable ? (

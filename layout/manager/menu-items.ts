@@ -1,14 +1,13 @@
 import { DashboardMenu } from "@/utils";
 import {
+  Banknote,
   CircleUser,
+  ConciergeBell,
+  Hamburger,
   LayoutDashboard,
+  List,
   Settings,
   UserRoundSearch,
-  List,
-  Earth,
-  Banknote,
-  Plane,
-  Hamburger
 } from "lucide-react";
 
 const baseDashboardUrl = "/manager-dashboard";
@@ -29,6 +28,16 @@ export const mainMenuItems = [
     title: "menus",
     url: dashboardMenu.defineUrl("/menus"),
     icon: Hamburger,
+  },
+  {
+    title: "orders",
+    url: dashboardMenu.defineUrl("/orders"),
+    icon: ConciergeBell,
+  },
+  {
+    title: "payments",
+    url: dashboardMenu.defineUrl("/payments"),
+    icon: Banknote,
   },
 ];
 

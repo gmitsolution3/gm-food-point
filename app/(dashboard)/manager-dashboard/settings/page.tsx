@@ -18,6 +18,7 @@ import { notify } from "@/utils";
 import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 
 interface SettingsResponse {
   data: ISettings;
@@ -97,14 +98,22 @@ export default function SettingsPage() {
             Manage your restaurant settings
           </p>
         </div>
-        {!isEditing && (
+
+        <div className="space-x-3">
+          {!isEditing && (
+            <Button
+              onClick={() => setIsEditing(true)}
+              className="text-white"
+            >
+              Edit Settings
+            </Button>
+          )}
           <Button
-            onClick={() => setIsEditing(true)}
             className="text-white"
           >
-            Edit Settings
+            <Link href="/manager-dashboard/settings/change-password">Change Password</Link>
           </Button>
-        )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>

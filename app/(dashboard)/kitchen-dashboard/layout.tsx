@@ -9,7 +9,7 @@ export default async function KitchenLayout({
   cooking: React.ReactNode;
   ready: React.ReactNode;
 }) {
-  await requireAuth(["chief"])
+  await requireAuth(["kitchen"])
 
   return (
     <>

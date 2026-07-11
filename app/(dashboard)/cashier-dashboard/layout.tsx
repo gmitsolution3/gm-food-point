@@ -3,13 +3,14 @@ import { DashboardHeader } from "@/layout/cashier/DashboardHeader";
 import { DashboardSidebar } from "@/layout/cashier/DashboardSidebar";
 import LayoutClientWrapper from "./LayoutClientWrapper";
 import { requireAuth } from "@/lib/requireAuth";
+import { EROLES } from "@/types";
 
 export default async function CashierLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireAuth(["cashier"]);
+  await requireAuth([EROLES.CASHIER]);
 
   return (
     <SidebarProvider>

@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/requireAuth";
 import Link from "next/link";
 import Image from "next/image";
+import {EROLES} from "@/types";
 
 export default async function KitchenLayout({
   queued,
@@ -11,7 +12,7 @@ export default async function KitchenLayout({
   cooking: React.ReactNode;
   ready: React.ReactNode;
 }) {
-  await requireAuth(["kitchen", "cashier", "manager"])
+  await requireAuth([EROLES.KITCHEN, EROLES.CASHIER, EROLES.MANAGER])
 
   return (
     <>

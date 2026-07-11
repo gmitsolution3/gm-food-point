@@ -1,5 +1,5 @@
-import { ComponentType } from "react";
 import { Input } from "@/components/ui/input";
+import { ComponentType } from "react";
 
 export default function CheckoutField({
   label,
@@ -10,6 +10,7 @@ export default function CheckoutField({
   error,
   maxLength,
   inputMode,
+  disabled = false,
 }: {
   label: string;
   Icon: ComponentType<{ className?: string }>;
@@ -19,6 +20,7 @@ export default function CheckoutField({
   error?: string;
   maxLength?: number;
   inputMode?: "text" | "tel" | "email" | "numeric";
+  disabled?: boolean;
 }) {
   return (
     <label className="block">
@@ -28,6 +30,7 @@ export default function CheckoutField({
       <div className="relative">
         <Icon className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          disabled={disabled}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}

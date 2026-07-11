@@ -10,34 +10,15 @@ import {
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
-import { useSocket } from "@/socket/socket-provider";
 
 export default function Home() {
   const { setOrderType } = useCart();
   const router = useRouter();
 
-  const socket = useSocket();
-
   const choose = (type: "dine-in" | "take-out") => {
     setOrderType(type);
     router.push("/menu");
   };
-
-  useEffect(() => {
-    socket.emit("join:room", {
-      role: "cashier",
-    });
-
-    socket.on("order:created", (payload) => {
-      console.log("Received:", payload);
-    });
-
-    return () => {
-      socket.off("order:created");
-    };
-  }, [socket]);
 
   const options = [
     {

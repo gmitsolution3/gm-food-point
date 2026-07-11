@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePost } from "@/hooks/swr/usePost";
 import { useCart } from "@/store/cart-store";
 import { IOrder, IPayment } from "@/types";
+import { getTableNumber } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -93,7 +94,7 @@ export default function CheckoutPage() {
   >({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      tableNumber: "15",
+      tableNumber: getTableNumber(),
       notes: "",
       payment: "cash",
       orderType: defaultOrderType,
@@ -225,6 +226,7 @@ export default function CheckoutPage() {
                 control={control}
                 render={({ field }) => (
                   <CheckoutField
+                    disabled
                     label="Table number"
                     Icon={Hash}
                     value={field.value}

@@ -1,19 +1,15 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { usePatch } from "@/hooks/swr/usePatch";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -21,11 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User, Calendar, Clock, Mail, Shield } from "lucide-react";
-import { useEffect } from "react";
-import Swal from "sweetalert2";
-import { IUser } from "@/types";
+import { usePatch } from "@/hooks/swr/usePatch";
+import { EROLES, IUser } from "@/types";
 import { formatDate } from "@/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar, Clock, Mail, User } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
+import * as z from "zod";
 
 const formSchema = z.object({
   role: z.string().min(1, "Role is required"),
@@ -41,9 +41,9 @@ interface UpdateRoleModalProps {
 }
 
 const roleOptions = [
-  { value: "manager", label: "Manager" },
-  { value: "cashier", label: "Cashier" },
-  { value: "kitchen", label: "Kitchen" },
+  { value: EROLES.MANAGER, label: "Manager" },
+  { value: EROLES.CASHIER, label: "Cashier" },
+  { value: EROLES.KITCHEN, label: "Kitchen" },
 ];
 
 export default function UpdateRoleModal({
@@ -150,7 +150,10 @@ export default function UpdateRoleModal({
                 {user.email}
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-xs capitalize">
+                <Badge
+                  variant="outline"
+                  className="text-xs capitalize"
+                >
                   Current role: {user.role}
                 </Badge>
               </div>
@@ -175,7 +178,9 @@ export default function UpdateRoleModal({
               </SelectContent>
             </Select>
             {errors.role && (
-              <p className="text-sm text-destructive">{errors.role.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.role.message}
+              </p>
             )}
             <p className="text-sm text-muted-foreground">
               Select the role you want to assign to this user
@@ -208,7 +213,11 @@ export default function UpdateRoleModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="text-white">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="text-white"
+            >
               Update Role
             </Button>
           </div>

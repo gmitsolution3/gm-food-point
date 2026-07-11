@@ -8,3 +8,13 @@ export interface IUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export enum EROLES {
+  CUSTOMER = "customer",
+
+  CASHIER = "cashier",
+
+  MANAGER = "manager",
+
+  KITCHEN = "kitchen",
+}

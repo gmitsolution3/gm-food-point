@@ -12,4 +12,6 @@ export const SOCKET_EVENTS = {
 export const ROLES = {
   CASHIER: "cashier",
   KITCHEN: "kitchen",
+  MANAGER: "manager",
+  USER: "user",
 } as const;

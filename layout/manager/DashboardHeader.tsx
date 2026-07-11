@@ -56,10 +56,10 @@ export function DashboardHeader() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href="/admin-dashboard/profile">Profile</Link>
+              <Link href="/manager-dashboard/profile">Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/admin-dashboard/settings">Settings</Link>
+              <Link href="/manager-dashboard/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

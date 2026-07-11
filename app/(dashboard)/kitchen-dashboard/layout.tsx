@@ -1,4 +1,6 @@
 import { requireAuth } from "@/lib/requireAuth";
+import Link from "next/link";
+import Image from "next/image";
 
 export default async function KitchenLayout({
   queued,
@@ -9,7 +11,7 @@ export default async function KitchenLayout({
   cooking: React.ReactNode;
   ready: React.ReactNode;
 }) {
-  await requireAuth(["kitchen"])
+  await requireAuth(["kitchen", "cashier", "manager"])
 
   return (
     <>
@@ -17,13 +19,18 @@ export default async function KitchenLayout({
         {/* Fixed Header */}
         <header className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex items-center justify-between gap-3">
+              <Link href="/" className="block">
+                <Image src="/images/logo.png" height={200} width={200} alt="Logo" className="w-24" />
+              </Link>
+              <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 🍳 Kitchen Dashboard
               </h1>
               <p className="text-sm text-gray-500 mt-0.5">
                 Real-time order management
               </p>
+              </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-sm text-gray-500">

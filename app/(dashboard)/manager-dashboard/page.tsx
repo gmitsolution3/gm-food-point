@@ -25,14 +25,41 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-interface FinanceData {
-  range: string;
+interface FinanceSummary {
   totalRevenue: number;
   totalOrders: number;
   averageOrderValue: number;
   cashRevenue: number;
   wechatRevenue: number;
+}
+
+interface ChartDataPoint {
+  label: string;
+  value: number;
+}
+
+interface FinanceCharts {
+  granularity: string;
+  revenue: ChartDataPoint[];
+  orders: ChartDataPoint[];
+}
+
+interface FinanceData {
+  summary: FinanceSummary;
+  charts: FinanceCharts;
 }
 
 interface StatisticsData {
@@ -62,6 +89,13 @@ interface StatisticsResponse {
   data: StatisticsData;
 }
 
+const CHART_COLORS = {
+  revenue: "#22c55e",
+  revenueGradient: "#22c55e",
+  orders: "#3b82f6",
+  ordersGradient: "#3b82f6",
+};
+
 export default function AdminDashboardPage() {
   const [range, setRange] = useState<string>("7days");
 
@@ -77,6 +111,17 @@ export default function AdminDashboardPage() {
 
   const finance = financeData?.data;
   const stats = statisticsData?.data;
+
+  // Get granularity label
+  const getGranularityLabel = (granularity: string) => {
+    const labels: Record<string, string> = {
+      hourly: "Hourly",
+      daily: "Daily",
+      weekly: "Weekly",
+      monthly: "Monthly",
+    };
+    return labels[granularity] || granularity;
+  };
 
   if (isLoading) {
     return (
@@ -99,6 +144,19 @@ export default function AdminDashboardPage() {
               <CardContent>
                 <div className="h-8 w-32 bg-muted rounded" />
                 <div className="h-3 w-24 bg-muted rounded mt-2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 mt-8">
+          {[1, 2].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-6 w-32 bg-muted rounded" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 bg-muted rounded" />
               </CardContent>
             </Card>
           ))}
@@ -157,6 +215,13 @@ export default function AdminDashboardPage() {
     { value: "1year", label: "1 Year" },
   ];
 
+  const summary = finance.summary;
+  const charts = finance.charts;
+
+  // Prepare data for revenue chart
+  const revenueData = charts?.revenue || [];
+  const ordersData = charts?.orders || [];
+
   return (
     <div className="container mx-auto px-5 lg:px-0 py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -197,17 +262,17 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(finance.totalRevenue)}
+                {formatCurrency(summary.totalRevenue)}
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span>Cash: {formatCurrency(finance.cashRevenue)}</span>
+                  <span>Cash: {formatCurrency(summary.cashRevenue)}</span>
                 </div>
-                {finance.wechatRevenue > 0 && (
+                {summary.wechatRevenue > 0 && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span>WeChat: {formatCurrency(finance.wechatRevenue)}</span>
+                    <span>WeChat: {formatCurrency(summary.wechatRevenue)}</span>
                   </div>
                 )}
               </div>
@@ -220,7 +285,7 @@ export default function AdminDashboardPage() {
               <ShoppingBag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{finance.totalOrders}</div>
+              <div className="text-2xl font-bold">{summary.totalOrders}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Total orders in this period
               </p>
@@ -234,7 +299,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(finance.averageOrderValue)}
+                {formatCurrency(summary.averageOrderValue)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Per order average
@@ -242,6 +307,89 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Charts Section */}
+        {charts && (
+          <div className="grid gap-6 md:grid-cols-2 mt-6">
+            {/* Revenue Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Revenue Trend</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {getGranularityLabel(charts.granularity)} revenue over the selected period
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={revenueData}>
+                      <defs>
+                        <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="label" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip
+                        formatter={(value) => formatCurrency(Number(value))}
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "6px",
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#22c55e"
+                        strokeWidth={2}
+                        fill="url(#revenueGradient)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Orders Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Orders Trend</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {getGranularityLabel(charts.granularity)} orders over the selected period
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={ordersData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="label" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "6px",
+                        }}
+                      />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {ordersData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.value > 0 ? "#3b82f6" : "#94a3b8"}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Operations Section */}

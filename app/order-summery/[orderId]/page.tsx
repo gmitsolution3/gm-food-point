@@ -9,7 +9,7 @@ import { useFetchById } from "@/hooks/swr/useFetchById";
 import { useSocket } from "@/socket/socket-provider";
 import { SOCKET_EVENTS } from "@/socket/socket.events";
 import { IOrder } from "@/types";
-import { notify } from "@/utils";
+import { getTableNumber, notify } from "@/utils";
 import { playNotification } from "@/utils/playNotification";
 import {
   AlertCircle,
@@ -133,7 +133,7 @@ export default function OrderSummeryPage() {
 
     const joinRoom = () => {
       socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
-        tableNumber: 15,
+        tableNumber: getTableNumber(),
       });
     };
 

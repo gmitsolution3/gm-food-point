@@ -1,15 +1,15 @@
 "use client";
 
+import {
+  ArrowRight,
+  ChefHat,
+  CreditCard,
+  LayoutDashboard,
+  Table2,
+} from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  CreditCard,
-  ChefHat,
-  Table2,
-  ArrowRight,
-} from "lucide-react";
 
 export default function DashboardsPage() {
   const dashboards = [
@@ -63,14 +63,16 @@ export default function DashboardsPage() {
       >
         {/* Logo */}
         <div className="mb-6 flex justify-center">
-          <div className="relative h-28 w-28 overflow-hidden p-2">
-            <Image
-              src="/images/logo.png"
-              alt="GM Food Point Logo"
-              fill
-              className="object-contain p-1"
-              priority
-            />
+          <div className="relative h-40 w-40 overflow-hidden p-2">
+            <Link href="/">
+              <Image
+                src="/images/logo.png"
+                alt="GM Food Point Logo"
+                fill
+                className="object-contain p-1"
+                priority
+              />
+            </Link>
           </div>
         </div>
 
@@ -98,7 +100,10 @@ export default function DashboardsPage() {
               >
                 {/* Icon */}
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <dashboard.icon className="h-8 w-8" strokeWidth={2} />
+                  <dashboard.icon
+                    className="h-8 w-8"
+                    strokeWidth={2}
+                  />
                 </div>
 
                 {/* Content */}
@@ -113,7 +118,8 @@ export default function DashboardsPage() {
 
                 {/* Arrow */}
                 <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground/50 transition-colors group-hover:text-foreground">
-                  Access <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  Access{" "}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               </motion.div>
             </Link>

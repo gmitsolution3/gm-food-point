@@ -25,19 +25,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Legend,
-} from "recharts";
 
 interface FinanceData {
   range: string;
@@ -65,10 +52,6 @@ interface StatisticsData {
     menus: number;
     categories: number;
   };
-  charts: {
-    weeklyRevenue: Array<{ date: string; revenue: number }>;
-    weeklyOrders: Array<{ date: string; orders: number }>;
-  };
 }
 
 interface FinanceResponse {
@@ -78,19 +61,6 @@ interface FinanceResponse {
 interface StatisticsResponse {
   data: StatisticsData;
 }
-
-const COLORS = {
-  cash: "#22c55e",
-  wechat: "#3b82f6",
-  pending: "#ef4444",
-  awaiting: "#eab308",
-  queued: "#3b82f6",
-  cooking: "#f97316",
-  ready: "#22c55e",
-  completed: "#10b981",
-  revenue: "#22c55e",
-  orders: "#3b82f6",
-};
 
 export default function AdminDashboardPage() {
   const [range, setRange] = useState<string>("7days");
@@ -107,19 +77,6 @@ export default function AdminDashboardPage() {
 
   const finance = financeData?.data;
   const stats = statisticsData?.data;
-
-  // Prepare weekly revenue data
-  const weeklyRevenueData = stats?.charts?.weeklyRevenue || [];
-  const weeklyOrdersData = stats?.charts?.weeklyOrders || [];
-
-  // Prepare order status data for bar chart
-  const orderStatusData = [
-    { name: "Awaiting Payment", value: stats?.orders.awaitingPayment || 0, color: COLORS.awaiting },
-    { name: "Queued", value: stats?.orders.queued || 0, color: COLORS.queued },
-    { name: "Cooking", value: stats?.orders.cooking || 0, color: COLORS.cooking },
-    { name: "Ready", value: stats?.orders.ready || 0, color: COLORS.ready },
-    { name: "Completed", value: stats?.orders.completedToday || 0, color: COLORS.completed },
-  ].filter((item) => item.value > 0);
 
   if (isLoading) {
     return (
@@ -147,14 +104,15 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 mt-8">
-          {[1, 2].map((i) => (
+        <div className="grid gap-6 md:grid-cols-3 mt-8">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-6 w-32 bg-muted rounded" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 bg-muted rounded" />
+                <div className="h-8 w-8 bg-muted rounded" />
               </CardHeader>
               <CardContent>
-                <div className="h-64 bg-muted rounded" />
+                <div className="h-8 w-16 bg-muted rounded" />
               </CardContent>
             </Card>
           ))}
@@ -284,80 +242,6 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Charts Section */}
-        <div className="grid gap-6 md:grid-cols-2 mt-6">
-          {/* Revenue Area Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Revenue Trend</CardTitle>
-              <p className="text-xs text-muted-foreground">Daily revenue over the selected period</p>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={weeklyRevenueData}>
-                    <defs>
-                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" className="text-xs" />
-                    <YAxis className="text-xs" />
-                    <Tooltip
-                      formatter={(value) => formatCurrency(Number(value))}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "6px",
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      fill="url(#revenueGradient)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Weekly Orders Bar Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Weekly Orders</CardTitle>
-              <p className="text-xs text-muted-foreground">Daily orders over the selected period</p>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weeklyOrdersData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" className="text-xs" />
-                    <YAxis className="text-xs" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "6px",
-                      }}
-                    />
-                    <Bar dataKey="orders" fill="#3b82f6" radius={[4, 4, 0, 0]}>
-                      {weeklyOrdersData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.orders > 0 ? "#3b82f6" : "#94a3b8"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       {/* Operations Section */}
@@ -366,51 +250,6 @@ export default function AdminDashboardPage() {
           <Clock className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold">Operations</h2>
         </div>
-
-        {/* Order Status Distribution Chart */}
-        {orderStatusData.length > 0 ? (
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Order Status Distribution</CardTitle>
-              <p className="text-xs text-muted-foreground">Current order status breakdown</p>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={orderStatusData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="name" className="text-xs" />
-                    <YAxis className="text-xs" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "6px",
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                      {orderStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Order Status Distribution</CardTitle>
-              <p className="text-xs text-muted-foreground">Current order status breakdown</p>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                No orders to display
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           <Card>

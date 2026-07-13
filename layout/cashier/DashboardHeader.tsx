@@ -45,7 +45,7 @@ export function DashboardHeader() {
               className="relative flex items-center gap-2 !px-2"
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src={"user?.image"} />
+                <AvatarImage src={user?.image} />
                 <AvatarFallback className="bg-primary text-white text-xs">
                   {getUserInitials(user?.name || "Cashier")}
                 </AvatarFallback>

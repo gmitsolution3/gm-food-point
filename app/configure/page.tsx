@@ -1,7 +1,8 @@
-import Configure from "./Configure";
 import { requireAuth } from "@/lib/requireAuth";
+import { EROLES } from "@/types";
+import Configure from "./Configure";
 
 export default async function ConfigurePage() {
-  await requireAuth(["manager"]);
-  return <Configure />
+  await requireAuth([EROLES.MANAGER]);
+  return <Configure />;
 }

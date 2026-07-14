@@ -13,6 +13,7 @@ export interface ISettings {
   orderNumberPrefix: string;
   isRestaurantOpen: boolean;
   paymentTimeoutMinutes: number,
+  totalTables: number;
   createdAt: string;
   updatedAt: string;
 }

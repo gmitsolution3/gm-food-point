@@ -66,8 +66,8 @@ export default function SettingsPage() {
         setIsEditing(false);
         refetch();
       }
-    } catch (error) {
-      notify.error("Failed to update settings. Please try again.");
+    } catch (error: any) {
+      notify.error(error.message || "Failed to update settings. Please try again.");
     }
   };
 
@@ -202,10 +202,24 @@ export default function SettingsPage() {
                   <Input
                     id="paymentTimeoutMinutes"
                     type="number"
-                    {...register("paymentTimeoutMinutes")}
+                    {...register("paymentTimeoutMinutes", { valueAsNumber: true })}
                     disabled={!isEditing || isUpdating}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="totalTables">Total Tables</Label>
+                <Input
+                  id="totalTables"
+                  type="number"
+                  placeholder="Enter total number of tables"
+                  {...register("totalTables", { valueAsNumber: true })}
+                  disabled={!isEditing || isUpdating}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Total number of tables available in the restaurant
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -225,7 +239,7 @@ export default function SettingsPage() {
                     id="taxPercentage"
                     type="number"
                     step="0.01"
-                    {...register("taxPercentage")}
+                    {...register("taxPercentage", { valueAsNumber: true })}
                     disabled={!isEditing || isUpdating}
                   />
                 </div>
@@ -237,7 +251,7 @@ export default function SettingsPage() {
                     id="serviceChargePercentage"
                     type="number"
                     step="0.01"
-                    {...register("serviceChargePercentage")}
+                    {...register("serviceChargePercentage", { valueAsNumber: true })}
                     disabled={!isEditing || isUpdating}
                   />
                 </div>

@@ -3,7 +3,8 @@
 import { useFetch } from "@/hooks/swr/useFetch";
 import { Card } from "@/components/ui/card";
 import { motion } from "motion/react";
-import { Loader2, Table, Users, Circle } from "lucide-react";
+import Image from "next/image";
+import { Loader2, Table, Circle } from "lucide-react";
 
 interface ITable {
   _id: string;
@@ -78,17 +79,24 @@ export default function TableBoardPage() {
           transition={{ duration: 0.4 }}
           className="mb-12 text-center"
         >
+          {/* Logo */}
           <div className="mb-6 flex justify-center">
-            <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-primary/20 bg-white p-2 shadow-lg">
-              <Table className="h-12 w-12 text-primary" strokeWidth={2} />
+            <div className="relative h-48 w-48 overflow-hidden p-2 ">
+              <Image
+                src="/images/logo.png"
+                alt="GM Food Point Logo"
+                fill
+                className="object-contain p-1"
+                priority
+              />
             </div>
           </div>
 
-          <h1 className="text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
+          <h1 className="text-5xl font-extrabold tracking-tight text-foreground">
             Table Board
           </h1>
           <p className="mx-auto mt-4 max-w-md text-base text-muted-foreground">
-            View and manage table availability
+            View table availability on live
           </p>
 
           {/* Stats */}

@@ -1,17 +1,13 @@
 "use client";
 
-import { useFetch } from "@/hooks/swr/useFetch";
 import { Card } from "@/components/ui/card";
+import { useFetch } from "@/hooks/swr/useFetch";
+import { ITable } from "@/types";
+import { Circle, Table } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { Loader2, Table, Circle } from "lucide-react";
-
-interface ITable {
-  _id: string;
-  tableNumber: number;
-  status: "available" | "occupied";
-  occupiedAt: string | null;
-}
+import TableBoardLoader from "./../../components/table-board/TableBoardLoader";
+import TableBoardError from "@/components/table-board/TableBoardError";
 
 interface ITablesResponse {
   success: boolean;
@@ -21,43 +17,27 @@ interface ITablesResponse {
 }
 
 export default function TableBoardPage() {
-  const { data, isLoading, isError, refetch } = useFetch<ITablesResponse>(
-    "/tables"
-  );
+  const { data, isLoading, isError, refetch } =
+    useFetch<ITablesResponse>("/tables");
 
   const tables = data?.data || [];
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading tables...</p>
-        </div>
-      </main>
-    );
+    return <TableBoardLoader />;
   }
 
   if (isError) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <h3 className="text-lg font-bold mb-2">Failed to load tables</h3>
-          <p className="text-muted-foreground">Please try again later</p>
-          <button
-            onClick={() => refetch()}
-            className="mt-4 rounded-full bg-primary px-6 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </main>
+      <TableBoardError refetch={refetch} />
     );
   }
 
-  const availableTables = tables.filter(t => t.status === "available");
-  const occupiedTables = tables.filter(t => t.status === "occupied");
+  const availableTables = tables.filter(
+    (t) => t.status === "available",
+  );
+  const occupiedTables = tables.filter(
+    (t) => t.status === "occupied",
+  );
 
   return (
     <main className="relative flex min-h-screen flex-col items-center overflow-hidden bg-background px-6 py-12">
@@ -81,7 +61,7 @@ export default function TableBoardPage() {
         >
           {/* Logo */}
           <div className="mb-6 flex justify-center">
-            <div className="relative h-48 w-48 overflow-hidden p-2 ">
+            <div className="relative h-48 w-48 overflow-hidden p-2">
               <Image
                 src="/images/logo.png"
                 alt="GM Food Point Logo"
@@ -124,7 +104,9 @@ export default function TableBoardPage() {
             className="flex flex-col items-center justify-center py-20 text-center"
           >
             <Table className="h-16 w-16 text-muted-foreground/30" />
-            <h3 className="mt-4 text-lg font-semibold">No tables found</h3>
+            <h3 className="mt-4 text-lg font-semibold">
+              No tables found
+            </h3>
             <p className="text-sm text-muted-foreground">
               There are no tables available in the system.
             </p>
@@ -138,7 +120,10 @@ export default function TableBoardPage() {
                   key={table._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.05 + index * 0.05 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.05 + index * 0.05,
+                  }}
                 >
                   <Card
                     className={`group relative overflow-hidden border-2 p-8 text-center transition-all hover:shadow-[var(--shadow-lift)] ${

@@ -7,3 +7,4 @@ export * from "./payment.type";
 export * from "./user.type";
 export * from "./pagination.type";
 export * from "./settings.type";
+export * from "./table.type";

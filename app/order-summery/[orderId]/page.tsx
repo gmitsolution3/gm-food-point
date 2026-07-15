@@ -22,10 +22,11 @@ import {
   Package,
   Utensils,
   XCircle,
+  LogOut,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 type OrderStatus =
@@ -120,6 +121,7 @@ const STATUS_FLOW: OrderStatus[] = [
 
 export default function OrderSummeryPage() {
   const { orderId } = useParams();
+  const router = useRouter();
 
   const { data, isLoading, isError, refetch } =
     useFetchById<IOrderResponse>("/orders", orderId as string);
@@ -159,6 +161,13 @@ export default function OrderSummeryPage() {
       socket.off(SOCKET_EVENTS.NOTIFICATION, handleNewNotification);
     };
   }, [socket]);
+
+  const handleLeaveTable = () => {
+    // Emit leave table event
+    // implement table leave feature here
+    // Navigate to home or menu
+    router.push("/menu");
+  };
 
   if (isLoading) {
     return <OrderSummaryLoader />;
@@ -494,12 +503,27 @@ export default function OrderSummeryPage() {
 
               {/* Actions */}
               <div className="mt-6 flex flex-col gap-2">
-                <Link
-                  href="/menu"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)] transition-colors hover:bg-primary/90"
-                >
-                  Order Again <ArrowRight className="h-4 w-4" />
-                </Link>
+                {isCompleted ? (
+                  <>
+                    <div className="text-center text-sm text-muted-foreground mb-1">
+                      After you're done eating, please click the leave table button
+                    </div>
+                    <button
+                      onClick={handleLeaveTable}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3.5 text-sm font-extrabold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Leave Table
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/menu"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-yellow)] transition-colors hover:bg-primary/90"
+                  >
+                    Order Again <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )}
                 <Link
                   href="/"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-secondary bg-card px-6 py-3.5 text-sm font-extrabold text-foreground transition-colors hover:bg-secondary"

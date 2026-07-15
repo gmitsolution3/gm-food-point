@@ -7,6 +7,7 @@ export const SOCKET_EVENTS = {
   ORDER_COOKING: "order:cooking",
   ORDER_READY: "order:ready",
   ORDER_COMPLETED: "order:completed",
+  TABLE_UPDATED: "table:updated",
 } as const;
 
 export const ROLES = {
@@ -14,4 +15,5 @@ export const ROLES = {
   KITCHEN: "kitchen",
   MANAGER: "manager",
   USER: "user",
+  TABLE: "table",
 } as const;

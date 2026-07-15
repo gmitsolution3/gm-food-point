@@ -1,13 +1,16 @@
 "use client";
 
+import TableBoardError from "@/components/table-board/TableBoardError";
+import TableBoardLoader from "@/components/table-board/TableBoardLoader";
 import { Card } from "@/components/ui/card";
 import { useFetch } from "@/hooks/swr/useFetch";
+import { useSocket } from "@/socket/socket-provider";
+import { ROLES, SOCKET_EVENTS } from "@/socket/socket.events";
 import { ITable } from "@/types";
 import { Circle, Table } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import TableBoardLoader from "./../../components/table-board/TableBoardLoader";
-import TableBoardError from "@/components/table-board/TableBoardError";
+import { useEffect } from "react";
 
 interface ITablesResponse {
   success: boolean;
@@ -17,26 +20,55 @@ interface ITablesResponse {
 }
 
 export default function TableBoardPage() {
-  const { data, isLoading, isError, refetch } =
-    useFetch<ITablesResponse>("/tables");
+  const { data, isLoading, isError, refetch } = useFetch("/tables");
+
+  const socket = useSocket();
 
   const tables = data?.data || [];
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const joinRoom = () => {
+      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+        role: ROLES.TABLE,
+      });
+    };
+
+    const handleConnect = () => {
+      joinRoom();
+    };
+
+    const handleTableUpdate = () => {
+      refetch();
+    };
+
+    if (socket.connected) {
+      joinRoom();
+    }
+
+    socket.on(SOCKET_EVENTS.CONNECT, handleConnect);
+    socket.on(SOCKET_EVENTS.TABLE_UPDATED, handleTableUpdate);
+
+    return () => {
+      socket.off(SOCKET_EVENTS.CONNECT, handleConnect);
+      socket.off(SOCKET_EVENTS.TABLE_UPDATED, handleTableUpdate);
+    };
+  }, [socket, refetch]);
 
   if (isLoading) {
     return <TableBoardLoader />;
   }
 
   if (isError) {
-    return (
-      <TableBoardError refetch={refetch} />
-    );
+    return <TableBoardError refetch={refetch} />;
   }
 
   const availableTables = tables.filter(
-    (t) => t.status === "available",
+    (t: any) => t.status === "available",
   );
   const occupiedTables = tables.filter(
-    (t) => t.status === "occupied",
+    (t: any) => t.status === "occupied",
   );
 
   return (
@@ -113,7 +145,7 @@ export default function TableBoardPage() {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {tables.map((table, index) => {
+            {tables.map((table: any, index: number) => {
               const isAvailable = table.status === "available";
               return (
                 <motion.div

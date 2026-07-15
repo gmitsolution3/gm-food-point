@@ -36,10 +36,17 @@ export default function DashboardsPage() {
     },
     {
       id: "table",
-      title: "Table Dashboard",
-      description: "Manage table reservations and status",
+      title: "Table Board",
+      description: "View table reservations and status",
       icon: Table2,
-      href: "/dashboard/table",
+      href: "/table-board",
+    },
+    {
+      id: "configuration",
+      title: "Configuration Dashboard",
+      description: "View table reservations and status",
+      icon: Table2,
+      href: "/configure",
     },
   ];
 

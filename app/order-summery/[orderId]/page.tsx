@@ -6,6 +6,7 @@ import OrderSummaryLoader from "@/components/order-summery/OrderSummeryLoader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFetchById } from "@/hooks/swr/useFetchById";
+import { usePatch } from "@/hooks/swr/usePatch";
 import { useSocket } from "@/socket/socket-provider";
 import { SOCKET_EVENTS } from "@/socket/socket.events";
 import { IOrder } from "@/types";
@@ -19,10 +20,11 @@ import {
   Clock,
   Clock as ClockIcon,
   CreditCard,
+  Loader2,
+  LogOut,
   Package,
   Utensils,
   XCircle,
-  LogOut,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -130,6 +132,9 @@ export default function OrderSummeryPage() {
 
   const socket = useSocket();
 
+  const { mutate: releaseTable, isLoading: isReleasing } =
+    usePatch(`/tables`);
+
   useEffect(() => {
     if (!socket) return;
 
@@ -162,11 +167,22 @@ export default function OrderSummeryPage() {
     };
   }, [socket]);
 
-  const handleLeaveTable = () => {
-    // Emit leave table event
-    // implement table leave feature here
-    // Navigate to home or menu
-    router.push("/menu");
+  const handleLeaveTable = async () => {
+    try {
+      const response = await releaseTable({
+        id: `${getTableNumber()}/release`,
+        data: null,
+      });
+
+      if (response?.success) {
+        notify.success("Table released successfully!");
+        router.push("/menu");
+      } else {
+        notify.error("Failed to release table. Please try again.");
+      }
+    } catch (error: any) {
+      notify.error(error.message || "Failed to release table. Please try again.");
+    }
   };
 
   if (isLoading) {
@@ -506,14 +522,25 @@ export default function OrderSummeryPage() {
                 {isCompleted ? (
                   <>
                     <div className="text-center text-sm text-muted-foreground mb-1">
-                      After you're done eating, please click the leave table button
+                      After you're done eating, please click the leave
+                      table button
                     </div>
                     <button
                       onClick={handleLeaveTable}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3.5 text-sm font-extrabold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                      disabled={isReleasing}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3.5 text-sm font-extrabold text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <LogOut className="h-4 w-4" />
-                      Leave Table
+                      {isReleasing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Leaving...
+                        </>
+                      ) : (
+                        <>
+                          <LogOut className="h-4 w-4" />
+                          Leave Table
+                        </>
+                      )}
                     </button>
                   </>
                 ) : (

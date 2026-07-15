@@ -176,7 +176,7 @@ export default function OrderSummeryPage() {
 
       if (response?.success) {
         notify.success("Table released successfully!");
-        router.push("/menu");
+        router.push("/");
       } else {
         notify.error("Failed to release table. Please try again.");
       }
